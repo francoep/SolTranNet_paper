@@ -109,7 +109,7 @@ The main dataset we utilized for training SolTranNet is AqsolDB\cite{AqSol}, whi
 Notably, while there are many other features available in AqsolDB, we only utilized the SMILES string, and the reported solubility (logS, where S is in mol/L).
 We then utilized rdkit\cite{rdkit} to calculate the Murcko scaffolds of the molecules, which were then utilized to cluster the molecules and generate a 3 fold clustered cross-validation (CCV) split of the data.
 We additionally created an independent test set out of the molecules present in the Solubility Challenge 2 test sets \cite{llinas} and FreeSolv \cite{freesolv}, such that no molecule in the independent test set has an rdkit fingerprint similarity of greater than or equal to 0.9 of any molecule in AqSolDB.
-The CCV AqSolDB dataset, and out independent test set were utilized to optimize SolTranNet's final architecture, as described in the Model Selection search subsection.
+The CCV AqSolDB dataset, and our independent test set were utilized to optimize SolTranNet's final architecture, as described in the Model Selection search subsection.
 
 While the provided sets above allow for an evaluation of SolTranNet, we also seek to compare to other published models. Given that we created our own test set, we seek to evaluate both our deployed model as well as the training procedure we utilized to select it on other published sets.
 \citet{boobier} provided a training and testing set (75 and 25 molecules respectively) utilized in 2017 which showed ML models performing equally as well as human experts.
@@ -117,14 +117,14 @@ While the provided sets above allow for an evaluation of SolTranNet, we also see
 \citet{lovric} provided a set of 829 molecules which they randomly split into a training, validation, and testing set consisting of 64\%, 16\%, and 20\% of the molecules respectively.
 This set was utilized to test various ML algorithms for their ability to predict aqueous solubility.
 Lastly, \citet{llinas} hosted the second solubility challenge, wherein two test sets were provided and participants could utilize any training set they desired, provided that no molecule was present in the test sets.
-As such, we filtered AqSolDB such that there was no overlap with any molecule present in the second solubility challenge to use as a new training set.
+As such, we filtered AqSolDB such that there was no overlap with any molecule present (as determined by a Tanimoto similarity of 1 between the default rdkit fingerprint's of each molecule in AqSolDB and provided by \citet{llinas}) in the second solubility challenge to use as a new training set.
 
 \subsection{Model Selection Search}
 The general architecture of the MAT model is provided in Figure\ref{fig:architecture}.
 In order to optimize the hyper-parameters for SolTranNet, we utilized a 2 stage optimization procedure as shown in Table\ref{tab:wandsweep}.
 All hyperparameter optimizations were performed utilizing the Weights and Biases platform\cite{wandb}.
-The first stage of the sweep was a hyperband search over the hyperparameters regarding the model's optimizer, as shown in Table\ref{tab:initsweep}. The goal of the search was to minimize the RMSE of the test set for the first fold of the CCV scaffold split of AqSolDB.
-This resulted in utilizing the huber loss function, a 2D embedding for the molecules, and the stochastic gradient descent (SGD) optimizer with momentum of 0.06, and no weight decay.
+The first stage of the sweep was a hyperband search over the hyperparameters regarding the model's optimizer, as well as the learning rate, and which loss function was utilized as shown in Table\ref{tab:initsweep}. The goal of the search was to minimize the RMSE of the test set for the first fold of the CCV scaffold split of AqSolDB.
+This resulted in utilizing the huber loss function, a 2D embedding for the molecules, and the stochastic gradient descent (SGD) optimizer with momentum of 0.06, no weight decay, and with a learning rate of 0.04.
 After this stage was completed, we then performed a grid search over the particular hyperparameters regarding SolTranNet itself for 100 epochs over each fold of the CCV scaffold split of AqSolDB as shown in Table\ref{tab:archsweep}.
 
 \begin{figure}[tb]
@@ -189,9 +189,8 @@ This speed analysis really only had an effect on the decision to utilize a 2D em
 
 \subsection{Final model training}
 The final architecture of SolTranNet utilized the following hyperparameters: 0.1 dropout, 0 lambda distance, 0.5 lambda attention, 1 final dense layer, 2 attention heads, a hidden dimension of size 8, and 8 stacks in the transformer encoding layer.
-(INSERT SECTION TALKING ABOUT HOW THE MODEL CATEGORIZES INPUT HERE)
-
-In order to select the final deployed model, we trained 5 models with different random seeds on all of the data in AqSolDB.
+The molecular embedding layer was unchanged from the initial MAT implementation\cite{MAT} where each atom is represented via a node with a feature vector as shown in SFig(REF).
+In order to select the final deployed model, we trained 5 models with different random seeds on all of the data in AqSolDB utilizing the huber loss function, the SGD optimizer with momentum of 0.06, no weight decay, and with a learning rate of 0.04.
 We dynamically stopped training based on not improving performance on the training set for 4 epochs.
 After training stopped, we deployed the model with the best RMSE performance on our independent test set (INSERT REFERENCE TO SUPPLEMENT HERE).
 
