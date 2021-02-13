@@ -108,7 +108,8 @@ SolTranNet is available via pip installation for python3, and the source code, d
 The main dataset we utilized for training SolTranNet is AqsolDB\cite{AqSol}, which was selected as it was the largest publicly available set.
 Notably, while there are many other features available in AqsolDB, we only utilized the SMILES string, and the reported solubility (logS, where S is in mol/L).
 We then utilized rdkit\cite{rdkit} to calculate the Murcko scaffolds of the molecules, which were then utilized to cluster the molecules and generate a 3 fold clustered cross-validation (CCV) split of the data.
-We additionally created an independent test set out of the molecules present in the Solubility Challenge 2 test sets \cite{llinas} and FreeSolv \cite{freesolv}, such that no molecule in the independent test set has an rdkit fingerprint similarity of greater than or equal to 0.9 of any molecule in AqSolDB.
+We additionally created an independent test set out of the molecules present in the Solubility Challenge 2 test sets \cite{llinas} and FreeSolv \cite{freesolv}, such that no molecule in the independent test set has an rdkit fingerprint similarity of greater than or equal to 0.9 to any molecule in AqSolDB.
+The histograms of each fold of the scaffold split as well as the full AqSolDB set and our independent set are shown in SFig(ref)
 The CCV AqSolDB dataset, and our independent test set were utilized to optimize SolTranNet's final architecture, as described in the Model Selection search subsection.
 
 While the provided sets above allow for an evaluation of SolTranNet, we also seek to compare to other published models. Given that we created our own test set, we seek to evaluate both our deployed model as well as the training procedure we utilized to select it on other published sets.
@@ -189,10 +190,10 @@ This speed analysis really only had an effect on the decision to utilize a 2D em
 
 \subsection{Final model training}
 The final architecture of SolTranNet utilized the following hyperparameters: 0.1 dropout, 0 lambda distance, 0.5 lambda attention, 1 final dense layer, 2 attention heads, a hidden dimension of size 8, and 8 stacks in the transformer encoding layer.
-The molecular embedding layer was unchanged from the initial MAT implementation\cite{MAT} where each atom is represented via a node with a feature vector as shown in SFig(REF).
+The molecular embedding layer was unchanged from the initial MAT implementation\cite{MAT} where each atom is represented via a node with a feature vector as shown in SFig\ref{tab:atomembed}.
 In order to select the final deployed model, we trained 5 models with different random seeds on all of the data in AqSolDB utilizing the huber loss function, the SGD optimizer with momentum of 0.06, no weight decay, and with a learning rate of 0.04.
-We dynamically stopped training based on not improving performance on the training set for 4 epochs.
-After training stopped, we deployed the model with the best RMSE performance on our independent test set (INSERT REFERENCE TO SUPPLEMENT HERE).
+We dynamically stopped training based on failing to improve fit to the training set for 4 epochs.
+After training stopped, we deployed the model with the best RMSE and $R^2$ performance on our independent test set without being an outlier as shown in SFig\ref{fig:dynsweep}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Results

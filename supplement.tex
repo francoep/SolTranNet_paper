@@ -47,4 +47,40 @@
     \label{tab:solsearchr2}
 \end{table}
 
+
+\begin{table}
+    %\centering
+    \begin{tabular}{|c|c|}
+        \hline
+         Index & Description \\
+         \hline
+         0-11 & Atom Identity as one-hot (B,N,C,O,F,P,S,Cl,Br,I,Dummy,Other) \\
+         12-17 & Number of heavy atom neighbors as one-hot of 0-5 \\
+         18-22 & Number H atoms as one-hot of 0-4 \\
+         23 & Formal Charge \\
+         24 & In a Ring \\
+         25 & Armoatic \\
+         \hline
+    \end{tabular}
+    \caption{Featurization used to embed atoms in SolTranNet. This is the same schema as in the original MAT implementation. }
+    \label{tab:atomembed}
+\end{table}
+
+
+\begin{figure}[tb]
+    \centering
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/final_model_ind_dyn_RMSE.pdf}
+    \end{subfigure}%
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/final_model_ind_dyn_R2.pdf}
+    \end{subfigure}
+    \caption{Boxplots of the performance of SolTranNet models on our independet test set using various dynamic stopping criteria. The Dynamic Stopping is the number of epochs that the model can fail to improve its fit to the training set before training is stopped. The boxplot is of 5 different seeds, with the ensemble performance shown with the blue dot. Interestingly, the ensemble outperforms the mean performance of the 5 models, but fails to be better than the best performing seed in all cases.}
+    \label{fig:dynsweep}
+\end{figure}
+
+
 \end{document}
