@@ -109,8 +109,8 @@ The main dataset we utilized for training SolTranNet is AqsolDB\cite{AqSol}, whi
 Notably, while there are many other features available in AqsolDB, we only utilized the SMILES string, and the reported solubility (logS, where S is in mol/L).
 We then utilized rdkit\cite{rdkit} to calculate the Murcko scaffolds of the molecules, which were then utilized to cluster the molecules and generate a 3 fold clustered cross-validation (CCV) split of the data.
 We additionally created an independent test set out of the molecules present in the Solubility Challenge 2 test sets \cite{llinas} and FreeSolv \cite{freesolv}, such that no molecule in the independent test set has an rdkit fingerprint similarity of greater than or equal to 0.9 to any molecule in AqSolDB.
-The histograms of each fold of the scaffold split as well as the full AqSolDB set and our independent set are shown in SFig(ref)
-The CCV AqSolDB dataset, and our independent test set were utilized to optimize SolTranNet's final architecture, as described in the Model Selection search subsection.
+The histograms of each fold of the scaffold split as well as the full AqSolDB set and our independent set are shown in SFig\ref{fig:solhists}.
+The CCV AqSolDB dataset, and our independent test set were utilized to optimize SolTranNet's final architecture, as described in the Model Selection Search subsection.
 
 While the provided sets above allow for an evaluation of SolTranNet, we also seek to compare to other published models. Given that we created our own test set, we seek to evaluate both our deployed model as well as the training procedure we utilized to select it on other published sets.
 \citet{boobier} provided a training and testing set (75 and 25 molecules respectively) utilized in 2017 which showed ML models performing equally as well as human experts.
@@ -130,7 +130,7 @@ After this stage was completed, we then performed a grid search over the particu
 
 \begin{figure}[tb]
     \centering
-    \includegraphics[width=\linewidth]{figure/soltrannet_architecture.pdf}
+    \includegraphics[width=\linewidth]{figures/soltrannet_architecture.pdf}
     \caption{General Architecture of SolTranNet. Each item in a blue box is a tuned hyperparameter, whose values were tested as shown in Table\ref{tab:archsweep}.}
     \label{fig:architecture}
 \end{figure}
@@ -248,16 +248,84 @@ new table input
 \end{table}
 
 \subsection{2D vs 3D}
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\linewidth]{figures/2dv3d_rmse.pdf}
+    \caption{RMSE performance dependent on if the distance matrix of SolTranNet used 3D conformers of the molecules for the first 10 models we trained in our architecture sweep. There is no statistically significant difference between these two collections ($p=0.144$).}
+    \label{fig:2dv3drmse}
+\end{figure}
+
 I have the boxplots of 10 models. Graphs are made.
 
 \subsection{salt frags}
 Graphs -- made.
 
+\begin{figure}[tb]
+    \centering
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/full_saltfragfirst_RMSEs_boxplots.pdf}
+    \end{subfigure}%
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/othersMW_saltfragfirst_RMSEs_boxplots.pdf}
+    \end{subfigure}
+    
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/others2plus_saltfragfirst_RMSEs_boxplots.pdf}
+    \end{subfigure}%
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/noothers_saltfragfirst_RMSEs_boxplots.pdf}
+    \end{subfigure}
+    \caption{RMSE of 5 different SolTranNet trained on the scaffold split of AqSolDB. The horizontal axis is dependent on if the salts were fragmented in the test set, while the colors of the boxplot are dependent on if the salts were fragmented in the training set. Each plot has successively fewer data points in the training and testing sets by more stringently removing atoms which would be embedded as "Other type" during training.}
+    \label{fig:saltfragrmse}
+\end{figure}
+
+
+
+
 \subsection{Timing analysis}
+
+\begin{table}
+    %\centering
+    \begin{tabular}{|c|c|c|c|c|}
+        \hline
+         Model & 2D GPU Time & 2D CPU Time & 3D GPU Time & 3D CPU Time \\
+         \hline
+         MAT & 0.0211 (0.000219) & 0.0395 (0.00153) & 0.141 (0.00366) & 0.161 (0.00576) \\
+         SolTranNet & 0.0222 (0.000235) & 0.0175 (0.000702) & 0.141 (0.00242) & 0.138 (0.00444) \\
+         \hline
+    \end{tabular}
+    \caption{Mean time for the model to predict a solubility from a SMILES string. The predictions were for the molecules in the Solubility Challenge 2 dataset. We report the mean and standard deviation for each model utilizing 10 runs. All predictions were performed on a machine with a Nvidia Titan XP graphics card, and an Intel(R) Core(TM) i7-4930K CPU.}
+    \label{tab:timings}
+\end{table}
+
 Table with CPU - 2D and 3D, GPU - 2D and 3D cols. Rows -- default MAT, non-optimized deployed, optimized deployed?
 Mean time per molecule in the AqSol set.
 
 \subsection{Architecture on other datasets}
+
+\begin{table}
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|}
+        \hline
+        Dataset &  Reported RMSE & STN Training RMSE &  STN Best RMSE & STN Deployed RMSE & Overlap \\
+        \hline
+        Cui et al 2020 & 0.681 & 0.749(0.130) & 0.634 & 0.704 & 0/62 \\
+        Boobier et al 2017 & 0.985 & 1.274(0.178) & 1.010 & 1.119 & 23/25 \\
+        Louvric et al 2020 & 0.720 & 0.898(0.101) & 0.720 & 1.049(0.0693) & 151.4(3.382)/166 \\
+        Llinas et al 2020 set1 & 0.780 & 1.421(0.204) & 1.055 & 1.301 & 79/100 \\
+        LLinas et al 2020 set2 & 1.060 & 1.619(0.380) & 1.229 & 1.729 & 18/32 \\
+        \hline
+    \end{tabular}
+    \caption{Performance of SolTranNet (STN) on other published datasets. For SolTranNet training, we trained 5 different seeds of our final architecture on the provided training and testing splits and report the mean and standard deviation. The SolTranNet Deployed column is using our final deployed model to predict the provided test set. The final column is the overlap of the provided test set with our deployed model's training set. Notably the Louvric set had 5 different randomly selected splits for training and testing, which is why there is a mean in the Deployed and Overlap columns.}
+    \label{tab:othersetsrmse}
+\end{table}
 Big TABLE -- most in the presentation. Need to make csv and put into pandas function.
 
 \subsection{Secondary analysis for llinas et al 2020.}

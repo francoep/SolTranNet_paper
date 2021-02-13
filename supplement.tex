@@ -109,10 +109,57 @@
         \centering
         \includegraphics[width=\linewidth]{figures/Independent_solhist.pdf}
     \end{subfigure}
-    \caption{Distributions of our various training set data. Each bin }
+    \caption{Distributions of our various training set data. Each bin has a width of 0.25 units. The first 3 histograms are for the 3 fold scaffold split of AqSolDB, and the last 2 are the full AqSolDB and out independent test set. Note that fold 1 of our scaffold split is particularly challenging as the test set distribution is very different from the training set.}
     \label{fig:solhists}
 \end{figure}
 
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\linewidth]{figures/2dv3d_r2.pdf}
+    \caption{$R^2$ performance dependent on if the distance matrix of SolTranNet used 3D conformers of the molecules for the first 10 models we trained in our architecture sweep. There is no statistically significant difference between these two collections ($p=0.116$).}
+    \label{fig:2dv3dr2}
+\end{figure}
 
+\begin{figure}[tb]
+    \centering
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/full_saltfragfirst_R2s_boxplots.pdf}
+    \end{subfigure}%
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/othersMW_saltfragfirst_R2s_boxplots.pdf}
+    \end{subfigure}
+    
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/others2plus_saltfragfirst_R2s_boxplots.pdf}
+    \end{subfigure}%
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/noothers_saltfragfirst_R2s_boxplots.pdf}
+    \end{subfigure}
+    \caption{$R^2$ of 5 different SolTranNet trained on the scaffold split of AqSolDB. The horizontal axis is dependent on if the salts were fragmented in the test set, while the colors of the boxplot are dependent on if the salts were fragmented in the training set. Each plot has successively fewer data points in the training and testing sets by more stringently removing atoms which would be embedded as "Other type" during training.}
+    \label{fig:saltfragr2}
+\end{figure}
+
+
+\begin{table}
+    \begin{tabular}{|c|c|c|c|c|c|}
+        \hline
+         Dataset & Reported $R^2$ & STN Training $R^2$ &  STN Best $R^2$ & STN Deployed $R^2$ & Overlap \\
+        \hline
+         Cui2020 & 0.412 & 0.560(0.0313) & 0.604 &  0.65 & 0/62 \\
+        Boobier2017 & 0.706 &  0.543(0.142) & 0.724 &  0.672 & 23/25 \\
+        Louvric2020 &  -- & 0.709(0.0537) & 0.783 & 0.712(0.0327) & 151.4/166 \\
+        Llinas2020 set1 & 0.62 & 0.454(0.0198) &  0.478 & 0.511 & 79/100 \\
+        LLinas2020 set2 & 0.75 & 0.740(0.0172) & 0.770 & 0.72 & 18/32 \\
+        \hline
+    \end{tabular}
+    \caption{Performance of SolTranNet (STN) on other published datasets. For SolTranNet training, we trained 5 different seeds of our final architecture on the provided training and testing splits and report the mean and standard deviation. The SolTranNet Deployed column is using our final deployed model to predict the provided test set. The final column is the overlap of the provided test set with our deployed model's training set. Notably the Louvric set had 5 different randomly selected splits for training and testing, which is why there is a mean in the Deployed and Overlap columns.}
+    \label{tab:othersetsr2}
+\end{table}
 
 \end{document}
