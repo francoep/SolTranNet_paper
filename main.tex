@@ -65,9 +65,9 @@ Accurate prediction of aqueous solubility remains a challenge in drug discovery.
 Recently, machine learning approaches have made progress on this task with the Second Challenge to Predict Aqueous Solubility consisting entirely of groups utilizing some form of machine learning (ML) in their submission.
 We present SolTranNet, a molecule attention transformer model to predict aqueous solubility from a molecule's SMILES representation.
 Atypically, we demonstrate that larger models do not perform better at this task, with the final version of SolTranNet only having 3,393 parameters, while still outperforming linear ML approaches.
-SolTranNet has a three-fold scaffold split cross-validation root mean square error (RMSE) of 1.165 on AqSolDB and an RMSE of 1.730 on an independent test set.
+SolTranNet has a three-fold scaffold split cross-validation root mean square error (RMSE) of 1.459 on AqSolDB and an RMSE of 1.711 on an independent test set.
 We also demonstrate that SolTranNet achieves a sensitivity of 96.6\% and a false discovery rate of 5.21\% on the Second Challenge to Predict Aqueous Solubility dataset, which is competitive with the other state of the art methods submitted to the competition.
-SolTranNet is available via pip installation, and its source code is available at \url{https://github.com/gnina/SolTranNet}.
+SolTranNet is available via \textsc{pip} installation, and its source code is available at \url{https://github.com/gnina/SolTranNet}.
 
 \end{abstract}
 
@@ -105,13 +105,15 @@ Indeed, all of the approaches in the second challenge to predict aqueous solubil
 \citet{lovric} performed a study of several ML methods, and showed that simpler ML approaches generalized better to unseen data, and proposed selecting a method based on a combination of its own test set performance, ability to generalize, and number of features.
 Deeper models have also shown improvement at this task, as shown by \citet{cui}, who utilized a 20 layer modified ResNet convolutional neural network architecture.
 \citet{MAT} developed the molecule attention transformer (MAT) architecture, which is modeled after the current state of the art transformer architecture for language processing.
+MAT functions by applying self-attention to a molecular graph representation of the molecule, where each node is characterized by a feature vector described in Table~\ref{tab:atomembed}.
+This feature vector is combined with an adjacency matrix (describing the connectivity of the molecule) and a distance matrix (describing how far apart each atom is from each other atom).
 MAT was utilized for a variety of molecular property prediction tasks, and performed well at solubility prediction although not being particularly optimized for this task.
 
 Here we present SolTranNet, a ML model based on the MAT architecture, for predicting aqueous solubility.
 We trained SolTranNet utilizing the AqSolDB dataset\cite{AqSol}, as it was the largest publicly available curated set, and optimized it for both speed and quality of prediction.
-SolTranNet had INSERT $R^2$ and INSERT root mean square error (RMSE) on clustered cross-validation scaffold-based splits of AqSolDB.
+SolTranNet had 0.6764 $R^2$ and 1.459 root mean square error (RMSE) on clustered cross-validation scaffold-based splits of AqSolDB, and 0.577 $R^2$ and 1.711 RMSE on our independent test set when trained on all of AqSolDB.
 We also compare to other recently published ML models.\cite{lovric,cui,boobier,llinas}
-SolTranNet is available via pip installation for python3, and the source code is available at \url{https://github.com/gnina/SolTranNet}. The datasets and scipts used to generate this paper are available at \url{https://github.com/francoep/SolTranNet_paper}.
+SolTranNet is available via \textsc{pip} installation for \textsc{python3}, and the source code is available at \url{https://github.com/gnina/SolTranNet}. The datasets and scipts used to generate this paper are available at \url{https://github.com/francoep/SolTranNet_paper}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -125,7 +127,10 @@ Additionally, we describe the 4 external datasets we used to validate SolTranNet
 
 \subsection{Installation and Usage}
 We aim to have SolTranNet be as easy to incorporate into a virtual screening pipeline as possible.
-As such, we have made the entire package \textsc{\textsc{pip}} installable for \textsc{python3}, which will allow for both a commandline utility and usage in a \textsc{python3} environment. The example installation and both usage cases are shown below in Figure\ref{fig:sampleusage}.
+As such, we have made the entire package \textsc{\textsc{pip}} installable for \textsc{python3}, which will allow for both a commandline utility and usage in a \textsc{python3} environment. 
+SolTranNet's dependencies are RDKit\cite{rdkit} (version 2020.03.5), scikit-learn\cite{scikit-learn} (version 0.22.2.post1), pandas\cite{pandas,mckinney-proc-scipy-2010} (version 1.0.1), NumPy\cite{numpy} (version 1.19.3), and PyTorch\cite{pytorch} (version 1.7.0), which are automatically updated via the \textsc{pip} installation.
+SolTranNet also supports CUDA enabled GPU acceleration, which is automatically detected through PyTorch.
+The example installation and both usage cases are shown below in Figure~\ref{fig:sampleusage}.
 
 \begin{figure}
     \centering
@@ -134,7 +139,7 @@ As such, we have made the entire package \textsc{\textsc{pip}} installable for \
         \begin{lstlisting}[frame=none,language=bash]
  pip install soltrannet
         \end{lstlisting}
-        \caption{Pip installation for python3}
+        \caption{Pip installation for \textsc{python3}}
     \end{subfigure}
     
     \begin{subfigure}[t]{0.75\textwidth}
@@ -142,7 +147,7 @@ As such, we have made the entire package \textsc{\textsc{pip}} installable for \
         \begin{lstlisting}[frame=none,language=bash]
 soltrannet -i mysmiles.txt -o predictions.txt
         \end{lstlisting}
-        \caption{Commandline utility usage}
+        \caption{Example commandline utility usage}
     \end{subfigure}
     
     \begin{subfigure}[t]{0.75\textwidth}
@@ -151,10 +156,10 @@ soltrannet -i mysmiles.txt -o predictions.txt
         >>> import soltrannet as stn
         >>> predictions=stn.predict(["SMILE1","SMILE2"])
         \end{minted}
-        \caption{Python3 environment usage}
+        \caption{\textsc{python3} environment usage}
     \end{subfigure}
     
-    \caption{SolTranNet pip installation instructions for python3, as well as sample usage as a commandline utility or in a python environment.}
+    \caption{SolTranNet \textsc{pip} installation instructions for \textsc{python3}, as well as sample usage as a commandline utility or in a \textsc{python3} environment.}
     \label{fig:sampleusage}
 \end{figure}
 
@@ -182,7 +187,11 @@ The first stage of the sweep was a hyperband search over hyperparameters related
 The objective of this search was to minimize the RMSE of the test set for the first fold of the CCV scaffold split of AqSolDB.
 This resulted in the selection of the huber loss function, the stochastic gradient descent (SGD) optimizer with momentum of 0.06, no weight decay, and a learning rate of 0.04.
 After this stage was completed, we then performed a grid search over the hyperparameters describing the SolTranNet architecture (Figure~\ref{fig:architecture}) for 100 epochs over each fold of the CCV scaffold split of AqSolDB as shown in Table~\ref{tab:archsweep}.
+We additionally evaluated the first 10 models of this hyperparameter search with both 2D and 3D distance matrices (see Final Data Processing Questions), after which only the 2D versions of the models were evaluated for the remainder of the sweep.
 During the grid search, we only evaluated one model for each combination of hyperparameters.
+In order to provide a point of comparision, we additionally evaluated 4 linear ML models on each fold of the scaffold split of AqSolDB, and on the full AqSolDB.
+The linear models are Lasso regression, Elastic Net linear regression, partial least squares regression, and ridge regression.
+Each was implemented through sci-kit learn, and trained on RDKit fingerprints with a bit size of 2048, and for a maximum of 100,000 iterations.
 
 \begin{figure}[tb]
     \centering
@@ -302,7 +311,8 @@ The Pearson $R^2$ was also calculated, and is provided in Table~\ref{tab:solsear
 \end{table}
 
 We then quantified SolTranNet's generalization by training 5 different models on the entirety of AqSolDB and testing them on our withheld independent set as shown in Figure~\ref{tab:deployed}.
-Notably, an ensemble of the 5 models we trained has better performance than the average of the 5 models but fails to outperform the best performing seed as shown in Figure~\ref{fig:dynsweep}.
+Notably, an ensemble of 5 models outperforms the mean of said models, but fails to beat the best performing seed (Figure~\ref{fig:dynsweep}).
+%Notably, an ensemble of the 5 models we trained has better performance than the average of the 5 models but fails to outperform the best performing seed as shown in Figure~\ref{fig:dynsweep}.
 As we desire SolTranNet to be as fast as possible, we have elected to deploy a single model which is the best performing seed.
 
 \begin{table}
@@ -324,18 +334,18 @@ As we desire SolTranNet to be as fast as possible, we have elected to deploy a s
 The first part of the SolTranNet pipeline is to create the molecular graph representation of each input molecule's SMILE string.
 Part of this representation is the calculation of the distance matrix, which stores how far apart each atom is from every other atom.
 In the MAT implementation this matrix is calculated by using RDkit to generate a 3D conformer for the molecule, which can be a potentially costly process.
-Thus, as shown in Figure\ref{fig:2dv3drmse}, we show that using a 2D or 3D conformer does not have a statistically significant difference on RMSE for the first 10 versions of SolTranNet during the architecture sweep ($p=0.144$).
+Thus, as shown in Figure~\ref{fig:2dv3drmse} and Figure~\ref{fig:2dv3dr2}, we show that using a 2D or 3D conformer does not have a statistically significant difference on RMSE or $R^2$ for the first 10 versions of SolTranNet during the architecture sweep ($p=0.144$).
 
 \begin{figure}[tb]
     \centering
     \includegraphics[width=\linewidth]{figures/2dv3d_rmse.pdf}
-    \caption{The first 10 models of the SolTranNet architecture sweep RMSE performance dependent on if the distance matrix used 3D conformers of the molecules. There is no statistically significant difference between these two collections ($p=0.144$).}
+    \caption{The first 10 models of the SolTranNet architecture sweep RMSE performance dependent on if the distance matrix used 3D conformers of the molecules. There is no statistically significant difference between these two collections ($p=0.144$), however the mean performance is better for the 3D models (1.522 vs 1.608).}
     \label{fig:2dv3drmse}
 \end{figure}
 
 \subsection{Salts and Rare Atom Types}
 In AqSolDB, salts are explicitly represented and consist of about 11.0\% of the available data.
-In addition, due to the atom typing schema of SolTranNet, 9.87\% of the available data contains atoms that are typed as ``Other''.
+In addition, due to the atom typing schema of SolTranNet, 9.87\% of the available data contains atoms that are typed as ``Other'' i.e. not B, N, C, O, F, P, S, Cl, Br, or I.
 These two groups overlap by 75.2\% and 83.9\% respectively.
 As such, we investigated the effect of fragmenting the salts and removing successively larger molecules with ``Other" typed atoms from the training data in Figure~\ref{fig:saltfragrmse}.
 Notably, for all same test set comparisons, there is no statistically significant difference between training on the full salt or the fragmented salt.
@@ -352,19 +362,19 @@ Since these ``Other" typed atoms are potentially encountered in a drug discovery
     \hfill
     \begin{subfigure}[t]{0.48\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{figures/others2plus_saltfragfirst_RMSEs_boxplots.pdf}
+        \includegraphics[width=\linewidth]{figures/othersMW_saltfragfirst_RMSEs_boxplots.pdf}
     \end{subfigure}
     
     \begin{subfigure}[t]{0.48\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{figures/othersMW_saltfragfirst_RMSEs_boxplots.pdf}
+        \includegraphics[width=\linewidth]{figures/others2plus_saltfragfirst_RMSEs_boxplots.pdf}
     \end{subfigure}%
     \hfill
     \begin{subfigure}[t]{0.48\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/noothers_saltfragfirst_RMSEs_boxplots.pdf}
     \end{subfigure}
-    \caption{RMSE of 5 different SolTranNet trained on the scaffold split of AqSolDB. The horizontal axis is dependent on if the salts were fragmented in the test set, while the colors of the boxplot are dependent on if the salts were fragmented in the training set. Each plot has successively fewer data points in the training and testing sets by more stringently removing atoms which would be embedded as ``Other type'' during training.}
+    \caption{RMSE of 5 different SolTranNet trained on the scaffold split of AqSolDB. The horizontal axis is dependent on if the salts were fragmented in the test set, while the colors of the boxplot are dependent on if the salts were fragmented in the training set. Each plot has successively fewer data points in the training and testing sets by more stringently removing atoms which would be embedded as ``Other type'' during training. There is no statistically significant difference in performance on the test set between training on Normal, or Fragmented Salts for all sets.}
     \label{fig:saltfragrmse}
 \end{figure}
 
@@ -398,9 +408,11 @@ With our 2D implementation and running on a single CPU 1 million molecules can b
 
 \subsection{SolTranNet Architecture on Other Datasets}
 
-In order to compare SolTranNet to other methods, we compare both our deployed architecture retrained on the provided data and the deployed version of SolTranNet, trained on AqSolDB, on four recently published solubility papers, as shown in Table~\ref{tab:othersetsrmse}.
+In order to compare SolTranNet to other methods, we evaluated SolTranNet on four recently published solubility training and testing sets, as shown in Table~\ref{tab:othersetsrmse} and Table~\ref{tab:othersetsr2}.
+To provide fair comparisons, we evaluate both models trained with the provided training and testing data, and the deployed version of SolTranNet.
+%In order to compare SolTranNet to other methods, we compare both our deployed architecture retrained on the provided data and the deployed version of SolTranNet, trained on AqSolDB, on four recently published solubility papers, as shown in Table~\ref{tab:othersetsrmse}.
 For each paper we initially trained five models with the same dynamic stopping criteria as our training set.
-However, for the dataset provided by \citet{lovric} and \citet{boobier}, this performed very poorly and stopped training early.
+However, for the dataset provided by \citet{lovric} and \citet{boobier}, this performed very poorly and stopped training early, due to the much smaller size of the training sets (530 and 75 molecules respectively) as compared to our AqSolDB training sets (6655 ccv and 9982 full).
 As such, we trained new models for 1000 and 500 epochs respectively for those sets.
 For the datasets provided by \citet{cui}, \citet{lovric}, and \citet{boobier} SolTranNet's best performing model trained on the provided datasets achieves similar results to the method reported in the respective paper.
 However, for the Second Solubility Challenge data\cite{llinas}, SolTranNet has much worse performance than the top submitted method, and ranks in the lower quarter of the submitted methods.
@@ -424,26 +436,32 @@ However, for the Second Solubility Challenge data\cite{llinas}, SolTranNet has m
 
 This prompted us to analyze how useful SolTranNet is compared to these other models at classification of soluble compounds, which is a typical use case for such a model in a virtual screening pipeline.
 To refactor the problem as a classification task, we define a soluble compound as a compound with $logS > -4$ and an insoluble compound as having $logS \leq -6$.
+These bounds were selected as a molecule having $logS \leq -6$ this would correspond to being unable to obtain a micromolar solution of the drug, and a $logS > -4$ corresponds to being able to obtain a 100 micromolar solution of the drug.
+For this analysis molecules with $-6 < logS <= -4$ were discarded.
+This process resulted in 74 out of 132 initial molecules being retained for analysis.
 We then calculated the sensitivity and false discovery rate of SolTranNet and each method submitted to the competition, as shown in Figure~\ref{fig:sc2redo}.
-With these definitions SolTranNet has a sensitivity of 96.6\% and a false discovery rate of 5.21\%, which had it tied for third place and seventeenth place respectively.
+With these definitions SolTranNet has a sensitivity of 94.8\% and a false discovery rate of 1.30\%, which had it tied for fourth place and second place respectively.
 
 \begin{figure}[tb]
     \centering
     \begin{subfigure}[t]{0.48\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/histogram_solchal2_true_logs.pdf}
+        \caption{Distribution of solubility values in the Solubility Challenge 2 test sets, with bin width of 0.5.}
     \end{subfigure}
     
     \begin{subfigure}[t]{0.48\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/hit_solchal2.pdf}
+        \caption{Sensitivity of submitted predictions on the Solubility Challenge 2 test sets. SolTranNet is shown in purple.}
     \end{subfigure}%
     \hfill
     \begin{subfigure}[t]{0.48\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/fail_solchal2.pdf}
+        \caption{False discovery rate of submitted predictions on the Solubility Challenge 2 test sets. SolTranNet is shown in purple.}
     \end{subfigure}
-    \caption{Recontextualizing the Solubility Challenge 2 data, as if we submitted SolTranNet. The first histogram is the distribution of both test sets provided for the challenge where each bin is 0.5 units wide. We turned the predictions into a classification of solubility, where a molecule is soluble if its logS $> -4$, and insoluble if its logS $\leq -6$. We then calculated the sensitivity and false discovery rates of each contestant in Sol Challenge 2 and SolTranNet. SolTranNet performs near state of the art in terms of sensitivity and false discovery rate with these definitions.}
+    \caption{Recontextualizing the Solubility Challenge 2 data, as if we submitted SolTranNet. (a) Distribution of both test sets provided for the challenge where each bin is 0.5 units wide. We turned the predictions into a classification of solubility, where a molecule is soluble if its logS $> -4$, and insoluble if its logS $\leq -6$. We then calculated the sensitivity (b) and false discovery rates (c) of each contestant in Solubility Challenge 2 and SolTranNet. SolTranNet performs near state of the art in terms of sensitivity (94.8\%) and false discovery rate (1.30\%) with these definitions.}
     \label{fig:sc2redo}
 \end{figure}
 
@@ -472,20 +490,21 @@ This indicates that our models may not be learning a set of completely generaliz
 The large range of the possible values in AqSolDB (14 log units) makes it easier to achieve high correlation statistics, which is why we favored analysis of the RMSE of the given predictions to compare model performance.
 
 Notably, SolTranNet had markedly worse performance on the Solubility Challenge 2 dataset than the best performing group (Table~\ref{tab:othersetsrmse}).
-However, it should be noted that the challenge had the test sets publicly available to the people submitting, and it is unknown if the available test set guided the fitting of the models for the submitted groups.
-SolTranNet also exhibited the largest amount of training variability on these test sets (with the best model having a 0.4 RMSE performance boost as compared to the mean), which indicates that we could potentially have a large performance boost by optimizing SolTranNet with this test set in mind.
+However, it should also be noted that the test sets for the Solubility Challenge 2 were not blind.
+This indicates that the most relevant comparison to the reported metrics is the STN Best model in Table~\ref{tab:othersetsrmse}, as it is selected with knowledge of performance on the test set.
+%However, it should be noted that the challenge had the test sets publicly available to the people submitting, and it is unknown if the available test set guided the fitting of the models for the submitted groups.
+SolTranNet also exhibited the largest amount of training variability on these test sets (with the best model having a 0.2 and 0.6 RMSE performance boost respectively as compared to the mean), which indicates that we could potentially have a large performance boost by optimizing the SolTranNet architecture with this test set in mind.
 
 Even the best reported models have an RMSE of over half a log unit, which raises the question of what level of performance makes a model useful for a drug discovery pipeline.
-We defined an insoluble molecule as having $logS \leq -6$, as this would correspond to being unable to obtain a micromolar solution of the drug.
-Defining a molecule as soluble with $logS > -4$ corresponds to being able to obtain a 100 micromolar solution of the drug, and is the suggested labelling by AqSolDB\cite{AqSol}.
+In order to investigate this, we restructured the evaluation into a classification task, as described in SolTranNet Architecture on Other Datasets section.
 We then chose the sensitivity and false discovery rate as our metrics of interest, as we desire a model that correctly identifies soluble compounds (high sensitivity) and avoids falsely identifying insoluble compounds (low false discovery rate).
-SolTranNet achieves this goal with a sensitivity of 96.6\% and a false discovery rate of 5.21\%, which is comparable to the other methods submitted to this competition.
+SolTranNet achieves this goal with a sensitivity of 94.8\% and a false discovery rate of 1.30\%, which is comparable to the other methods submitted to this competition.
 
 We have shown that SolTranNet, through its molecule attention transformer architecture, is amenable to predicting aqueous solubility from the SMILES string of a molecule, and outperforms linear ML approaches.
-During our hyperparameter optimization in Table~\ref{tab:solsearchrmse}, we demonstrate that models with more parameters do not fit better to the training data and also exhibit worse performance on an independent test set.
+During our hyperparameter optimization in Table~\ref{tab:solsearchrmse} and Table~\ref{tab:solsearchr2}, we demonstrate that models with more parameters do not fit better to the training data in our scaffold-based CCV splits and also exhibit worse performance on an independent test set.
 The smaller size of SolTranNet also makes is amenable to running on a single CPU, with its average per molecule prediction time being faster than utilizing the GPU.
 SolTranNet performs comparably well to other current ML based models, as shown in Table~\ref{tab:othersetsrmse} and Figure~\ref{fig:sc2redo}.
-We have deployed SolTranNet as a pip installable package for easy integration into drug discovery pipelines, and its source code is available at \url{https://github.com/gnina/SolTranNet}.
+We have deployed SolTranNet as a \textsc{pip} installable package for easy integration into drug discovery pipelines, and its source code is available at \url{https://github.com/gnina/SolTranNet}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% The "Acknowledgement" section can be given in all manuscript

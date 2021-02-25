@@ -115,7 +115,7 @@
 \begin{figure}[tb]
     \centering
     \includegraphics[width=\linewidth]{figures/2dv3d_r2.pdf}
-    \caption{$R^2$ performance dependent on if the distance matrix of SolTranNet used 3D conformers of the molecules for the first 10 models we trained in our architecture sweep. There is no statistically significant difference between these two collections ($p=0.116$).}
+    \caption{$R^2$ performance dependent on if the distance matrix of SolTranNet used 3D conformers of the molecules for the first 10 models we trained in our architecture sweep. There is no statistically significant difference between these two collections ($p=0.116$), but the mean performance of the 3D models is better than the 2D models (0.646 vs 0.614).}
     \label{fig:2dv3dr2}
 \end{figure}
 
@@ -124,21 +124,25 @@
     \begin{subfigure}[t]{0.48\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/full_saltfragfirst_R2s_boxplots.pdf}
+        \caption{No statistically significant difference between performance on either test set when comparing training with or without fragmented salts ($p=$0.0596 and 0.1852).}
     \end{subfigure}%
     \hfill
     \begin{subfigure}[t]{0.48\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/othersMW_saltfragfirst_R2s_boxplots.pdf}
+        \caption{No statistically significant difference between performance on either test set when comparing training with or without fragmented salts ($p=$0.4751 and 0.1100).}
     \end{subfigure}
     
     \begin{subfigure}[t]{0.48\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/others2plus_saltfragfirst_R2s_boxplots.pdf}
+        \caption{Training with fragmenting salts performed worse on testing on Normal ($p=0.0240$) and better on testing on Fragment ($p=0.03547$).}
     \end{subfigure}%
     \hfill
     \begin{subfigure}[t]{0.48\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/noothers_saltfragfirst_R2s_boxplots.pdf}
+        \caption{Training with fragmented salts had no effect on testing on Normal ($p=0.1555$), but performed better when testing on Fragment ($p=0.0116$).}
     \end{subfigure}
     \caption{$R^2$ of 5 different SolTranNet trained on the scaffold split of AqSolDB. The horizontal axis is dependent on if the salts were fragmented in the test set, while the colors of the boxplot are dependent on if the salts were fragmented in the training set. Each plot has successively fewer data points in the training and testing sets by more stringently removing atoms which would be embedded as "Other type" during training.}
     \label{fig:saltfragr2}
