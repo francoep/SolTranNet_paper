@@ -1,7 +1,7 @@
 # SolTranNet Paper
 The data sets and scripts used to generate the figures for SolTranNet (insert citation to paper)
 
-SolTranNet's implementation can be found [here](https://https://github.com/francoep/SolTranNet).
+SolTranNet's implementation can be found [here](https://https://github.com/gnina/SolTranNet).
 
 ## Code
 Explanation
