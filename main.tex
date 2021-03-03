@@ -219,10 +219,10 @@ Each was implemented through scikit-learn\cite{scikit-learn}, and trained on RDK
              Dimension of Conformer Generation & 2D, 3D  \\
              Latent Dimension of Encoder & 2, 4, \textbf{8}, 16, 32, 64, 128, 256, 512, 1024  \\
              Dropout & 0, \textbf{0.1}  \\
-             Number of Attention Heads (#Heads) & \textbf{2}, 4, 8, 16, 32  \\
+             Number of Attention Heads (\#Heads) & \textbf{2}, 4, 8, 16, 32  \\
              $\lambda_1$ Attention & 0.25, 0.33, \textbf{0.5}  \\
              $\lambda_2$ Distance & \textbf{0}, 0.33  \\
-             Number of Encoder Stacks (#Stacks) & 2, 4, 6, \textbf{8}, 16  \\
+             Number of Encoder Stacks (\#Stacks) & 2, 4, 6, \textbf{8}, 16  \\
              Scaffold CCV folds & 0, 1, 2  \\
              Loss Function & Huber  \\
              Learning Rate & 0.04  \\
@@ -284,18 +284,18 @@ The Pearson $R^2$ was also calculated, and is provided in Table~\ref{tab:solsear
          3 & 336,385 & 1.454 & 1.239 & 1.857 & 1.165 & 1.949 \\
          4 & 22,657 & 1.297 & 1.187 & \textbf{1.582} & 1.066 & 1.903 \\
          5 & 11,905 & \textbf{1.271} & \textbf{1.130} & 1.605 & \textbf{0.998} & 1.923 \\
-         6 & 11,905 & 1.350 & 1.272 & 1.680 & 1.012 & 1.903\\
-         \underline{7} & \underline{3,393} & \underline{1.459} & \underline{1.172} & \underline{1.916} & \underline{1.159} & \underline{\textbf{1.779}}\\
+         6 & 11,905 & 1.350 & 1.272 & 1.680 & 1.012 & 1.903\\ \hline \hline
+         7 & 3,393 & 1.459 & 1.172 & 1.916 & 1.159 & \textbf{1.779}\\ \hline \hline
          8 & 2,609 & 1.376 & 1.169 & 1.788 & 1.055  & 1.973 \\
          9 & 2,609 & 1.454 & 1.252 & 1.919 & 1.043  & 1.973 \\
-         \hline
+         \hline \hline
          Elastic & 1,463 & 1.835 & 1.843 & 1.965 & 1.687  & 2.090\\
          Lasso & 1,077 & 1.876 & 1.914 & 1.984 & 1.719 & 2.136\\
          PLS & 2,048 & 2.413 & 3.085 & 2.082 & 1.902 & 2.081\\
          Ridge & 2,048 & 2.239 & 2.503 & 2.032 & 2.155 & 2.312 \\
          \hline
     \end{tabular}
-    \caption{SolTranNet model hyperparameter search for predicting solubility RMSE on the scaffold-based clustered cross-validation splits of AqSolDB (CCV) and our independent test set (Ind). Additionally, all models outperform linear approaches trained on RDKit fingerprints using scikit-learn\cite{scikit-learn}. The underlined model is the architecture used by the final model selection.}
+    \caption{SolTranNet model hyperparameter search for predicting solubility RMSE on the scaffold-based clustered cross-validation splits of AqSolDB (CCV) and our independent test set (Ind). Additionally, all models outperform linear approaches trained on RDKit fingerprints using scikit-learn\cite{scikit-learn}. The isolated row (model 7) is the final SolTranNet architecture.}
     \label{tab:solsearchrmse}
 \end{table}
 
@@ -317,13 +317,14 @@ As we desire SolTranNet to be as fast as possible, we have elected to deploy a s
     \label{tab:deployed}
 \end{table}
 
-\subsection{Final Data Processing Questions}
+\subsection{Conformer Generation}
 
 The first part of the SolTranNet pipeline is to create the molecular graph representation of each input molecule's SMILE string.
 Part of this representation is the calculation of the distance matrix, which stores how far apart each atom is from every other atom.
 In the MAT implementation this matrix is calculated by using RDkit to generate a 3D conformer for the molecule, which can be a potentially costly process.
 Thus, as shown in Figure~\ref{fig:2dv3drmse} and Figure~\ref{fig:2dv3dr2}, we show that using a 2D or 3D conformer does not have a statistically significant difference on RMSE or $R^2$ for the first 10 hyper-parameter combinations of SolTranNet during the architecture sweep ($p=0.144$).
-As such, we did not train 3D versions of the models for the remainder of the sweep.
+As such, we did not train 3D versions of the models for the remainder of the sweep and instead used distances determined from the 2D representation of the molecule. 
+As the final model does not use distance information ($\lambda_2 = 0$), this matrix is not calculated, further accelerating predictions.
 
 \begin{figure}[tb]
     \centering
@@ -334,8 +335,8 @@ As such, we did not train 3D versions of the models for the remainder of the swe
 
 \subsection{Salts and Rare Atom Types}
 In AqSolDB, salts are explicitly represented and consist of about 11.0\% of the available data.
-In addition, due to the atom typing schema of SolTranNet, 9.87\% of the available data contains atoms that are typed as ``Other,'' i.e. not B, N, C, O, F, P, S, Cl, Br, or I.
-These two groups overlap by 75.2\% and 83.9\% respectively.
+In addition, due to the atom typing schema of SolTranNet, 9.87\% of the AqSolDB molecules contain atoms that are typed as ``Other,'' i.e. not B, N, C, O, F, P, S, Cl, Br, or I.
+These two groups overlap by 75.2\% and 83.9\% respectively; that is, unusual atom types are typically due to the inclusion of salts.
 As such, we investigate the effect of fragmenting the salts (only keeping the largest component) and removing successively larger molecules with ``Other" typed atoms from the training data in Figure~\ref{fig:saltfragrmse} and Figure~\ref{fig:saltfragr2}.
 Notably, for all comparisons between identical test sets, there is no statistically significant difference between training on the full salt or the fragmented salt for the RMSE evaluations.
 We do note that when removing all molecules containing any ``Other'' typed molecule, training on fragmented salts performed better for the $R^2$ evaluation when testing with fragmented salts while having the same performance on testing with normal salts (Figure~\ref{fig:noothersdf2}).
