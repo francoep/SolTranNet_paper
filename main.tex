@@ -328,7 +328,7 @@ For benchmarking, we determined the mean time it takes to go from a SMILES strin
 Table~\ref{tab:timings} shows the mean and standard deviation of 10 runs performed on a machine with an Nvidia Titan-XP graphics card, and using 1 core of an Intel(R) Core(TM) i7-4930K CPU.
 Notably, for the original MAT implementation, utilizing the 3D conformer generation takes 36 times longer when utilizing the GPU (4 times longer on CPU).
 SolTranNet, with its fewer number of parameters and skipping of the conformer generation process, runs 1.6 times faster on the GPU (9.7 times faster on CPU) than MAT utilizing the 2D conformer generation.
-With our 2D implementation and running on a single GPU 1 million molecules can be predicted in about 36 minutes (51 minutes on CPU).
+With our 2D implementation and running on a single GPU 1 million molecules can be predicted in 36.02 minutes.
 
 %This is for the version that is still calculating the distance matrix, even though it all gets 0'd out.
 %I'm working on adding a row for the deployed version which skips this calculation entirely
@@ -389,21 +389,33 @@ For this threshold, SolTranNet has a sensitivity of 94.8\% and a false discovery
     \begin{subfigure}[t]{0.48\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/histogram_solchal2_true_logs.pdf}
-        \caption{Distribution of solubility values in the Solubility Challenge 2 test sets, with bin width of 0.5.}
-    \end{subfigure}
-    
-    \begin{subfigure}[t]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{figures/hit_solchal2.pdf}
-        \caption{Sensitivity of submitted predictions on the Solubility Challenge 2 test sets. SolTranNet is shown in purple.}
+        \caption{Distribution of solubility values in the SC2 test sets, with bin width of 0.5.}
     \end{subfigure}%
     \hfill
     \begin{subfigure}[t]{0.48\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{figures/fail_solchal2.pdf}
-        \caption{False discovery rate of submitted predictions on the Solubility Challenge 2 test sets. SolTranNet is shown in purple.}
+        \includegraphics[width=\linewidth]{figures/hit_-4_solchal2.pdf}
+        \caption{Sensitivity of submitted predictions on the SC2 test sets. SolTranNet is shown in purple.}
     \end{subfigure}
-    \caption{Recontextualizing the Solubility Challenge 2 data, as if we submitted SolTranNet. (a) Distribution of both test sets provided for the challenge where each bin is 0.5 units wide. We turned the predictions into a classification of solubility, where a molecule is soluble if its logS $> -4$, and insoluble if its logS $\leq -6$. We then calculated the sensitivity (b) and false discovery rates (c) of each contestant in Solubility Challenge 2 and SolTranNet. SolTranNet performs near state of the art in terms of sensitivity (94.8\%) and false discovery rate (1.30\%) with these definitions.}
+    
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/fail_-4_solchal2.pdf}
+        \caption{False discovery rates where a molecule is considered insoluble if its $LogS <=-4$ SolTranNet is shown in purple.}
+    \end{subfigure}%
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/fail_-5_solchal2.pdf}
+        \caption{False discovery rates where a molecule is considered insoluble if its $LogS <=-5$ SolTranNet is shown in purple.}
+    \end{subfigure}
+    
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/fail_-6_solchal2.pdf}
+        \caption{False discovery rates where a molecule is considered insoluble if its $LogS <=-6$ SolTranNet is shown in purple.}
+    \end{subfigure}
+    \caption{Recontextualizing the Second Challenge to Predict Aqueous Solubility (SC2) data, as if we submitted SolTranNet. (a) Distribution of both test sets provided for the challenge where each bin is 0.5 units wide. We turned the predictions into a classification of solubility, where a molecule is soluble if its logS $> -4$, and insoluble if its logS $\leq -6$. We then calculated the sensitivity (b) and false discovery rates (c-e) of each contestant in Solubility Challenge 2 and SolTranNet. SolTranNet performs near state of the art in terms of sensitivity (94.8\%) and false discovery rate (1.30\%) with these definitions.}
     \label{fig:sc2redo}
 \end{figure}
 
@@ -470,7 +482,7 @@ This work is supported by R01GM108340 from the National Institute of General Med
 %This will usually read something like: ``Experimental procedures and
 %characterization data for all new compounds. The class will
 %automatically add a sentence pointing to the information on-line:
-Supporting Information Available: Supplementary Figures~\ref{fig:dynsweep}-\ref{fig:saltfragr2} and Tables~\ref{tab:solsearchr2}-\ref{tab:othersetsr2}.
+Supporting Information Available: Supplementary Figures~\ref{tab:wandsweep}-\ref{fig:saltfragr2} and Tables~\ref{tab:solsearchr2}-\ref{tab:othersetsr2}.
 \end{suppinfo}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
