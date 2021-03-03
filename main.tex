@@ -66,7 +66,7 @@ For instance, in the Second Challenge to Predict Aqueous Solubility contest, all
 We present SolTranNet, a molecule attention transformer model to predict aqueous solubility from a molecule's SMILES representation.
 Atypically, we demonstrate that larger models do not perform better at this task, with the final version of SolTranNet only having 3,393 parameters, while still outperforming linear ML approaches.
 SolTranNet has a three-fold scaffold split cross-validation root mean square error (RMSE) of 1.459 on AqSolDB and an RMSE of 1.711 on an independent test set.
-We also demonstrate that SolTranNet achieves a sensitivity of 94.8\% and a false discovery rate of 1.30\% on the Second Challenge to Predict Aqueous Solubility dataset, which is competitive with the other state of the art methods submitted to the competition.
+We also demonstrate that, when used as a classifier to filter out insoluble compounds, SolTranNet achieves a sensitivity of 94.8\% on the Second Challenge to Predict Aqueous Solubility dataset and is competitive with the other state of the art methods submitted to the competition.
 SolTranNet is available via \textsc{pip} installation, and its source code is available at \url{https://github.com/gnina/SolTranNet}.
 
 \end{abstract}
@@ -187,54 +187,6 @@ Each was implemented through scikit-learn\cite{scikit-learn}, and trained on RDK
     \includegraphics[width=\linewidth]{figures/soltrannet_architecture.pdf}
     \caption{General Architecture of SolTranNet. Each item in a blue box is a tuned hyperparameter, whose values were tested as shown in Figure~\ref{tab:archsweep}.}
     \label{fig:architecture}
-\end{figure}
-
-\begin{figure}[tb]
-    \subfloat[Optimizer Hyperband Sweep]{
-        \centering
-        \begin{tabular}{|c|c|}
-        \hline
-            Parameter & Range \\
-        \hline
-            Training Epochs & [250, 2000]  \\
-            Loss Function & MSE, MAE, Huber  \\
-            Learning Rate & [0.0001, 0.1]  \\
-            Momentum & [0.5, 0.9]  \\
-            Optimizer & SGD, Adam  \\
-            Weight Decay & [0, 0.5]  \\
-            Dimension of Conformer Generation & 2D, 3D  \\
-            Scaffold CCV fold & 0 \\
-            Target & minimize test RMSE  \\
-        \hline
-        \end{tabular}
-        \label{tab:initsweep}
-    }
-    
-    \subfloat[Architecture Grid Search]{
-        \centering
-        \begin{tabular}{|c|c|}
-        \hline
-            Parameter & Range \\
-        \hline
-             Dimension of Conformer Generation & 2D, 3D  \\
-             Latent Dimension of Encoder & 2, 4, \textbf{8}, 16, 32, 64, 128, 256, 512, 1024  \\
-             Dropout & 0, \textbf{0.1}  \\
-             Number of Attention Heads (\#Heads) & \textbf{2}, 4, 8, 16, 32  \\
-             $\lambda_1$ Attention & 0.25, 0.33, \textbf{0.5}  \\
-             $\lambda_2$ Distance & \textbf{0}, 0.33  \\
-             Number of Encoder Stacks (\#Stacks) & 2, 4, 6, \textbf{8}, 16  \\
-             Scaffold CCV folds & 0, 1, 2  \\
-             Loss Function & Huber  \\
-             Learning Rate & 0.04  \\
-             Momentum & 0.06  \\
-             Optimizer & SGD  \\
-             Weight Decay & 0  \\
-         \hline
-        \end{tabular}
-        \label{tab:archsweep}
-    }
-    \caption{Two stage hyperparameter sweep for SolTranNet. The Optimizer sweep was performed via using Weights and Bias's hyperband sweeping tool, with the target to minimize the test set RMSE. The Architecture sweep was a grid search over the listed parameters after the optimizer hyperparameters were set from the first stage. The deployed version of SolTranNet uses the hyperparameters in bold.}
-    \label{tab:wandsweep}
 \end{figure}
 
 In order to select the best performing model, we calculated the $R^2$ and the root mean square error (RMSE) of the predicted solubility.
@@ -372,9 +324,9 @@ Since these ``Other" typed atoms are potentially encountered in a drug discovery
 \subsection{Run-time Performance}
 
 Lastly, we seek to benchmark the run-time performance of SolTranNet.
-For benchmarking, we determined the mean time it takes to go from a SMILES string to a solubility prediction for the 132 molecules provided by SC2, with a batch size of 32.
+For benchmarking, we determined the mean time it takes to go from a SMILES string to a solubility prediction for the 132 molecules provided by SC2.
 Table~\ref{tab:timings} shows the mean and standard deviation of 10 runs performed on a machine with an Nvidia Titan-XP graphics card, and using 1 core of an Intel(R) Core(TM) i7-4930K CPU.
-Notably for the original MAT implementation, utilizing the 3D conformer generation takes 36 times longer when utilizing the GPU (only 4 times longer on CPU).
+Notably, for the original MAT implementation, utilizing the 3D conformer generation takes 36 times longer when utilizing the GPU (4 times longer on CPU).
 SolTranNet, with its fewer number of parameters and skipping of the conformer generation process, runs 1.6 times faster on the GPU (9.7 times faster on CPU) than MAT utilizing the 2D conformer generation.
 With our 2D implementation and running on a single GPU 1 million molecules can be predicted in about 36 minutes (51 minutes on CPU).
 
@@ -386,7 +338,9 @@ With our 2D implementation and running on a single GPU 1 million molecules can b
     %\centering
     \begin{tabular}{|c|c|c|}
         \hline
-         Model & Time (s/mol) GPU & CPU \\
+        \multirow{2}{*}{Model}    & \multicolumn{2}{c|}{Mean Time (std) [s/mol]} \\ 
+        \cline{2-3}
+          &  GPU & CPU \\
          \hline
          MAT 3D & 0.1233 (0.001928) & 0.1493 (0.002315) \\
          MAT 2D & 0.003472 (0.00015) & 0.02968 (0.002516) \\
@@ -414,11 +368,11 @@ However, for the Second Solubility Challenge data\cite{llinas}, SolTranNet has m
         \hline
         Dataset &  Reported & STN Training &  STN Best & STN Deployed & Overlap \\
         \hline
-        Cui2020 & 0.681 & 0.860(0.215) & 0.624 & 0.813 & 0/62 \\
-        Boobier2017 & 0.985 & 1.274(0.178) & 1.010 & 0.845 & 23/25 \\
-        Lovric2020 & 0.720 & 0.898(0.101) & 0.720 & 0.854(0.0672) & 151.4/166 \\
-        Llinas2020 set1 & 0.780 & 1.119(0.163) & 0.952 & 1.004 & 79/100 \\
-        Llinas2020 set2 & 1.060 & 1.811(0.328) & 1.243 & 1.295 & 18/32 \\
+        Cui2020 & 0.681 & 0.860 (0.215) & 0.624 & 0.813 & 0/62 \\
+        Boobier2017 & 0.985 & 1.274 (0.178) & 1.010 & 0.845 & 23/25 \\
+        Lovric2020 & 0.720 & 0.898 (0.101) & 0.720 & 0.854 (0.0672) & 151.4/166 \\
+        Llinas2020 set1 & 0.780 & 1.119 (0.163) & 0.952 & 1.004 & 79/100 \\
+        Llinas2020 set2 & 1.060 & 1.811 (0.328) & 1.243 & 1.295 & 18/32 \\
         \hline
     \end{tabular}
     \caption{RMSE performance of SolTranNet (STN) on other published datasets. For SolTranNet Training, we trained five different seeds of our final architecture on the provided training and testing splits and report the mean and standard deviation (in parentheses). The SolTranNet Deployed column is using our final deployed model to predict the provided test set. The final column is the overlap of the provided test set with our deployed model's training set. Notably the Lovric set had five different randomly selected splits for training and testing, which is why there is a mean in the Deployed and Overlap columns.}
@@ -426,12 +380,9 @@ However, for the Second Solubility Challenge data\cite{llinas}, SolTranNet has m
 \end{table}
 
 This prompted us to analyze how useful SolTranNet is compared to these other models at classification of soluble compounds, which is a typical use case for such a model in a virtual screening pipeline.
-To refactor the problem as a classification task, we define a soluble compound as a compound with $logS > -4$ and an insoluble compound as having $logS \leq -6$.
-These bounds were selected as a molecule having $logS \leq -6$ this would correspond to being unable to obtain a micromolar solution of the drug, and a $logS > -4$ corresponds to being able to obtain a 100 micromolar solution of the drug.
-For this analysis molecules with $-6 < logS <= -4$ were discarded.
-This process resulted in 74 out of 132 initial molecules in the SC2 dataset being retained for analysis.
+To refactor the problem as a classification task, we define a soluble compound as a compound with $logS > -4$, corresponding to being able to obtain a 100 micromolar solution of the drug.
 We then calculated the sensitivity and false discovery rate of SolTranNet and each method submitted to the SC2 competition, as shown in Figure~\ref{fig:sc2redo}.
-With these definitions SolTranNet has a sensitivity of 94.8\% and a false discovery rate of 1.30\%, which had it tied for fourth place and second place respectively.
+For this threshold, SolTranNet has a sensitivity of 94.8\% and a false discovery rate of 28.6\%.  However, as shown in Figure~\ref{fig:sc2redo}, as the threshold for misclassification is relaxed (i.e., molecules that are predicted to have a $logS > -4$ but have an actual $logS$ greater than a relaxed threshold), the false discovery rate quickly drops, with FDRs of 7.8\% and 1.3\% for -5 and -6 thresholds respectively.  This suggests that SolTranNet would be useful at screening out insoluble compounds.
 
 \begin{figure}[tb]
     \centering
@@ -486,15 +437,15 @@ This indicates that the most relevant comparison to the reported metrics is the 
 SolTranNet also exhibited the largest amount of training variability on these test sets (with the best model having a 0.2 and 0.6 RMSE performance boost respectively as compared to the mean), which indicates that we could potentially have a large performance boost by optimizing the SolTranNet architecture with this test set in mind.
 
 Even the best reported models have an RMSE of over half a log unit, which raises the question of what level of performance makes a model useful for a drug discovery pipeline.
-In order to investigate this, we restructured the evaluation into a classification task, as described in SolTranNet Architecture on Other Datasets section.
-We then chose the sensitivity and false discovery rate as our metrics of interest, as we desire a model that correctly identifies soluble compounds (high sensitivity) and avoids falsely identifying insoluble compounds (low false discovery rate).
-SolTranNet achieves this goal with a sensitivity of 94.8\% and a false discovery rate of 1.30\%, which is comparable to the other methods submitted to this competition.
+In order to investigate this, we restructured the evaluation into a classification task.
+We chose the sensitivity and false discovery rate as our metrics of interest, as we desire a model that correctly identifies soluble compounds (high sensitivity) and avoids falsely identifying highly insoluble compounds (low false discovery rate with a relaxed threshold).
+SolTranNet achieves comparable classification performance to the other methods submitted to this competition (Figure~\ref{fig:sc2redo}).
 
 We have shown that SolTranNet, through its molecule attention transformer architecture, is amenable to predicting aqueous solubility from the SMILES string of a molecule, and outperforms linear ML approaches.
 During our hyperparameter optimization in Table~\ref{tab:solsearchrmse} and Table~\ref{tab:solsearchr2}, we demonstrate that models with more parameters do not perform better in our scaffold-based CCV splits and also exhibit worse performance on an independent test set.
-The smaller size of SolTranNet and not needing to calculate a distance matrix makes it run 58 times faster than the original MAT implementation (Table:\ref{tab:timings}).
+The smaller size of SolTranNet and removal of the distance matrix calculation makes it run 58 times faster than the original MAT implementation (Table:\ref{tab:timings}).
 SolTranNet performs comparably well to other current ML based models, as shown in Table~\ref{tab:othersetsrmse},\ref{tab:othersetsr2} and Figure~\ref{fig:sc2redo}.
-We have deployed SolTranNet as a \textsc{pip} installable package for easy integration into drug discovery pipelines, and its source code is available at \url{https://github.com/gnina/SolTranNet}.
+We have deployed SolTranNet as a \textsc{pip} installable package for easy integration into drug discovery pipelines, and its source code is available under an Apache open source license at \url{https://github.com/gnina/SolTranNet}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% The "Acknowledgement" section can be given in all manuscript
@@ -506,7 +457,7 @@ We have deployed SolTranNet as a \textsc{pip} installable package for easy integ
 
 The authors thank Andrew McNutt and Jonathan King for their insightful contributions during the preparation of this manuscript.
 
-This work is supported by R01GM108340 from the National Institute of General Medical Sciences, and by a GPU donation from the NVIDIA corporation.
+This work is supported by R01GM108340 from the National Institute of General Medical Sciences and by a GPU donation from the NVIDIA corporation.
 
 \end{acknowledgement}
 
