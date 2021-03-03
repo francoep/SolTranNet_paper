@@ -45,11 +45,12 @@ stn_model_params = {
 }
 
 stn_cpu=make_dep_model(**stn_model_params)
-stn_cpu.to('cpu')
+stn_cpu.to('cuda')
 
-smis=open('test').readlines()
+smis=open('test1million').readlines()
 smis=[x.split(',')[-1].rstrip() for x in smis[1:]]
 
+'''
 for size in [1,8,16,32,64,128,132,150,200,250,600]:
     print('---------------',size,'-----------------')
     scpu_2d=[]
@@ -59,3 +60,7 @@ for size in [1,8,16,32,64,128,132,150,200,250,600]:
         
         scpu_2d.append(np.mean([x[0] for x in stn_cpu_times_2d]))
     print(f'STN - 2D {np.mean(scpu_2d)/len(smis)}  {np.std(scpu_2d)/len(smis)}')
+'''
+
+stn_cpu_times=complex_measure_dep(stn_cpu,smis,batch_size=32)
+print(f'STN - 2D 1million {stn_cpu_times[0]} seconds.')
