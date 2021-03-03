@@ -18,6 +18,54 @@
 
 \title{Supporting Information:\\SolTranNet -- A ML tool for fast aqueous solubility prediction.}
 \begin{document}
+\begin{figure}[tb]
+    \subfloat[Optimizer Hyperband Sweep]{
+        \centering
+        \begin{tabular}{|c|c|}
+        \hline
+            Parameter & Range \\
+        \hline
+            Training Epochs & [250, 2000]  \\
+            Loss Function & MSE, MAE, Huber  \\
+            Learning Rate & [0.0001, 0.1]  \\
+            Momentum & [0.5, 0.9]  \\
+            Optimizer & SGD, Adam  \\
+            Weight Decay & [0, 0.5]  \\
+            Dimension of Conformer Generation & 2D, 3D  \\
+            Scaffold CCV fold & 0 \\
+            Target & minimize test RMSE  \\
+        \hline
+        \end{tabular}
+        \label{tab:initsweep}
+    }
+    
+    \subfloat[Architecture Grid Search]{
+        \centering
+        \begin{tabular}{|c|c|}
+        \hline
+            Parameter & Range \\
+        \hline
+             Dimension of Conformer Generation & 2D, 3D  \\
+             Latent Dimension of Encoder & 2, 4, \textbf{8}, 16, 32, 64, 128, 256, 512, 1024  \\
+             Dropout & 0, \textbf{0.1}  \\
+             Number of Attention Heads (\#Heads) & \textbf{2}, 4, 8, 16, 32  \\
+             $\lambda_1$ Attention & 0.25, 0.33, \textbf{0.5}  \\
+             $\lambda_2$ Distance & \textbf{0}, 0.33  \\
+             Number of Encoder Stacks (\#Stacks) & 2, 4, 6, \textbf{8}, 16  \\
+             Scaffold CCV folds & 0, 1, 2  \\
+             Loss Function & Huber  \\
+             Learning Rate & 0.04  \\
+             Momentum & 0.06  \\
+             Optimizer & SGD  \\
+             Weight Decay & 0  \\
+         \hline
+        \end{tabular}
+        \label{tab:archsweep}
+    }
+    \caption{Two stage hyperparameter sweep for SolTranNet. The Optimizer sweep was performed via using Weights and Bias's hyperband sweeping tool, with the target to minimize the test set RMSE. The Architecture sweep was a grid search over the listed parameters after the optimizer hyperparameters were set from the first stage. The deployed version of SolTranNet uses the hyperparameters in bold.}
+    \label{tab:wandsweep}
+\end{figure}
+
 \begin{table}
     %\centering
     \begin{tabular}{|c|c|c|c|c|c|c|}
