@@ -38,7 +38,7 @@ args=parser.parse_args()
 
 #create the grid of the specified parameters
 combos=list(itertools.product([args.dropout,args.ldist,args.lattn,args.ndense,args.heads,args.dmodel,args.nstacklayers,args.seed,args.dynamic]))
-
+print(combos)
 with open(args.outname,'w') as outfile:
 	for drop,lam_dist,lam_attn,nden,head,dim,nsl,s,dyn in combos:
 		sent=f'python3 train.py --trainfile {args.trainfile} --testfile{args.testfile} --datadir {args.datadir} --epochs {args.epochs} --lr {args.lr} --loss {args.loss} --dropout {drop} --ldist {lam_dist} --lattn {lam_attn} --Ndense {nden} --heads {head} --dmodel {dim} --nstacklayers {nsl} --seed {s} --dynamic {dyn}'
