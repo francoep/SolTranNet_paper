@@ -19,13 +19,13 @@ parser.add_argument('--loss',type=str,default='huber',help='Loss function to be 
 
 
 #variable options
-parser.add_argument('--dropout',type=float,default=[0],nargs='+',help='Applying Dropout to model weights when training. Accepts any number of arguments. Defaults to 0.')
-parser.add_argument('--ldist',type=float,default=[0.33],nargs='+',help='Lambda for model attention to the distance matrix. Accepts any number of arguments. Defaults to 0.33 (even between dist, attention, and graph features)')
-parser.add_argument('--lattn',type=float,default=[0.33],nargs='+',help='Lambda for model attention to the attention matrix. Accepts any number of arguments. Defaults to 0.33 (even between dist, attenttion, and graph features)')
+parser.add_argument('--dropout',type=float,default=[0,0.1],nargs='+',help='Applying Dropout to model weights when training. Accepts any number of arguments. Defaults to 0.')
+parser.add_argument('--ldist',type=float,default=[0,0.33],nargs='+',help='Lambda for model attention to the distance matrix. Accepts any number of arguments. Defaults to 0.33 (even between dist, attention, and graph features)')
+parser.add_argument('--lattn',type=float,default=[0.25, 0.33, 0.5],nargs='+',help='Lambda for model attention to the attention matrix. Accepts any number of arguments. Defaults to 0.33 (even between dist, attenttion, and graph features)')
 parser.add_argument('--ndense',type=int,default=[1],nargs='+',help='Number of Dense blocks in FeedForward section. Accepts any number of arguments. Defaults to 1')
-parser.add_argument('--heads',type=int,default=[16],nargs='+',help='Number of attention heads in MultiHeaded Attention. Accepts any number of arguments. **Needs to evenly divide dmodel** Defaults to 16.')
-parser.add_argument('--dmodel',type=int,default=[1024],nargs='+',help='Dimension of the hidden layer for the model. Accepts any number of arguments. Defaults to 1024.')
-parser.add_argument('--nstacklayers',type=int,default=[8],nargs='+',help='Number of stacks in the Encoder layer. Accepts any number of arguments. Defaults to 8')
+parser.add_argument('--heads',type=int,default=[2,4,8,16,32],nargs='+',help='Number of attention heads in MultiHeaded Attention. Accepts any number of arguments. **Needs to evenly divide dmodel** Defaults to 16.')
+parser.add_argument('--dmodel',type=int,default=[2,4,8,16,32,64,128,256,512,1024],nargs='+',help='Dimension of the hidden layer for the model. Accepts any number of arguments. Defaults to 1024.')
+parser.add_argument('--nstacklayers',type=int,default=[2,4,6,8,16],nargs='+',help='Number of stacks in the Encoder layer. Accepts any number of arguments. Defaults to 8')
 parser.add_argument('--seed',type=int,default=[420],nargs='+',help='Random seed for training the models. Accepts any number of arguments. Defaults to 420.')
 parser.add_argument('--dynamic',type=int,default=[0],nargs='+',help='If set, the maximum number of epochs a model can not improve on the training set before stopping training. Defaults to not being set. Can accept any number of arguments.')
 
