@@ -73,7 +73,7 @@ for size in args.batchsize:
     scpu_2d=[]
     for run in range(args.numruns):
         stn_cpu_times_2d=[]
-        stn_cpu_times_2d.append(complex_measure_dep(stn_cpu,smis,batch_size=size))
+        stn_cpu_times_2d.append(complex_measure_dep(model,smis,batch_size=size))
         
         scpu_2d.append(np.mean([x[0] for x in stn_cpu_times_2d]))
 
