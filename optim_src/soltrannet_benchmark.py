@@ -1,10 +1,8 @@
 import torch
 import numpy as np
-from data_utils import load_data_from_df as ldfd_dep
-from data_utils import construct_loader as cl_dep
-from data_utils import load_data_from_smiles as ldfs_dep
-from transformer import make_model as make_dep_model
+import argparse
 import time
+from transformer import make_model as make_dep_model
 
 def complex_measure_dep(model,list_of_smiles,batch_size=1):
     '''
@@ -29,10 +27,27 @@ def complex_measure_dep(model,list_of_smiles,batch_size=1):
     elapsed_fp=time.time()-t0
     return elapsed_fp,tload
 
-d_atom=28
+#setting up the arguments
+parser=argparse.ArgumentParser(description="Create Training Jobs for hyper parameter sweeps")
+parser.add_argument('-i','--infile',type=str,required=True,help='PATH to the file you wish to use. Assumes the content is 1 SMILE per line')
+parser.add_argument('--batchsize',default=[1,8,16,32,64],nargs='+',help='Batch size(s) for loading the data from <infile>. Defaults to [1,8,16,32,64].')
+parser.add_argument('--numruns',default=10,help='Number of runs to perform per batchsize. Defaults to 10.')
+parser.add_argument('--cpu',action='store_true',help='Flag to force a CPU version of the model to be used.')
+parser.add_argument('--permolecule',action='store_true',help='Flag to divide the stats by the number of SMILES evaluate.')
 
-stn_model_params = {
-    'd_atom': d_atom,
+#importing the spcific versions of the model for testing.
+if args.cpu:
+    from cpu_data_utils import load_data_from_df as ldfd_dep
+    from cpu_data_utils import construct_loader as cl_dep
+    from cpu_data_utils import load_data_from_smiles as ldfs_dep
+else:
+    from data_utils import load_data_from_df as ldfd_dep
+    from data_utils import construct_loader as cl_dep
+    from data_utils import load_data_from_smiles as ldfs_dep
+
+
+model_params = {
+    'd_atom': 28,
     'd_model': 8,
     'N': 8,
     'h': 2,
@@ -44,23 +59,23 @@ stn_model_params = {
     'aggregation_type': 'mean'
 }
 
-stn_cpu=make_dep_model(**stn_model_params)
-stn_cpu.to('cuda')
+model=make_dep_model(**model_params)
+if not args.cpu:
+    model.to('cuda')
 
-smis=open('test1million').readlines()
-smis=[x.split(',')[-1].rstrip() for x in smis[1:]]
+smis=open(args.infile).readlines()
+smis=[x.rstrip() for x in smis]
 
-'''
-for size in [1,8,16,32,64,128,132,150,200,250,600]:
-    print('---------------',size,'-----------------')
+for size in args.batchsize:
+    print('--------------- Batch Size:',size,' -----------------')
     scpu_2d=[]
-    for run in range(10):
+    for run in range(args.numruns):
         stn_cpu_times_2d=[]
         stn_cpu_times_2d.append(complex_measure_dep(stn_cpu,smis,batch_size=size))
         
         scpu_2d.append(np.mean([x[0] for x in stn_cpu_times_2d]))
-    print(f'STN - 2D {np.mean(scpu_2d)/len(smis)}  {np.std(scpu_2d)/len(smis)}')
-'''
 
-stn_cpu_times=complex_measure_dep(stn_cpu,smis,batch_size=32)
-print(f'STN - 2D 1million {stn_cpu_times[0]} seconds.')
+    if args.permolecule:
+        print(f'STN  time:{np.mean(scpu_2d)/len(smis)}  std:{np.std(scpu_2d)/len(smis)}')
+    else:
+        print(f'STN  time:{np.mean(scpu_2d)}  std:{np.std(scpu_2d)}')
