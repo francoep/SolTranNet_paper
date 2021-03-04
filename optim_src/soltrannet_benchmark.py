@@ -30,8 +30,8 @@ def complex_measure_dep(model,list_of_smiles,batch_size=1):
 #setting up the arguments
 parser=argparse.ArgumentParser(description="Create Training Jobs for hyper parameter sweeps")
 parser.add_argument('-i','--infile',type=str,required=True,help='PATH to the file you wish to use. Assumes the content is 1 SMILE per line')
-parser.add_argument('--batchsize',default=[1,8,16,32,64],nargs='+',help='Batch size(s) for loading the data from <infile>. Defaults to [1,8,16,32,64].')
-parser.add_argument('--numruns',default=10,help='Number of runs to perform per batchsize. Defaults to 10.')
+parser.add_argument('--batchsize',type=int,default=[1,8,16,32,64],nargs='+',help='Batch size(s) for loading the data from <infile>. Defaults to [1,8,16,32,64].')
+parser.add_argument('--numruns',type=int,default=10,help='Number of runs to perform per batchsize. Defaults to 10.')
 parser.add_argument('--cpu',action='store_true',help='Flag to force a CPU version of the model to be used.')
 parser.add_argument('--permolecule',action='store_true',help='Flag to divide the stats by the number of SMILES evaluate.')
 args=parser.parse_args()
