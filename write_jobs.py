@@ -37,7 +37,7 @@ parser.add_argument('-o','--outname',default='grid_sweep.cmds',help='Output file
 args=parser.parse_args()
 
 #create the grid of the specified parameters
-combos=itertools.product([args.dropout,args.ldist,args.lattn,args.ndense,args.heads,args.dmodel,args.nstacklayers,args.seed,args.dynamic])
+combos=itertools.product(args.dropout,args.ldist,args.lattn,args.ndense,args.heads,args.dmodel,args.nstacklayers,args.seed,args.dynamic)
 print(combos)
 with open(args.outname,'w') as outfile:
     for c in combos:
