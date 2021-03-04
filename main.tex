@@ -195,7 +195,7 @@ Thus, we selected our best performing model by its RMSE performance on our indep
 Additionally, as we intend for this tool to be deployed for use on potentially very large datasets, we took into account the speed of SolTranNet in evaluating the results of our hyperparameter search. 
 
 \subsection{Final model training}
-The final architecture of SolTranNet utilized the following hyperparameters: 0.1 dropout, 0 lambda distance, 0.5 lambda attention, 2 attention heads, a hidden dimension of size 8, and 8 stacks in the transformer encoding layer. A 2D molecular representation was selected because it provided statistically equivalent results to 3D representations (Figure~\ref{fig:2dv3drmse}) without the computational burden of generating a 3D conformation or computing a distance matrix.
+The final architecture of SolTranNet utilized the following hyperparameters: 0.1 dropout, 0 lambda distance, 0.5 lambda attention, 2 attention heads, a hidden dimension of size 8, and 8 stacks in the transformer encoding layer. A 2D molecular representation was selected because it provided statistically equivalent results to 3D representations (Figure~\ref{fig:2dv3d}) without the computational burden of generating a 3D conformation or computing a distance matrix.
 The molecular embedding layer was unchanged from the initial MAT implementation\cite{MAT} where each atom is represented as a node with a feature vector as shown in Fig~\ref{tab:atomembed}.
 In order to select the final deployed model, we trained 5 models with different random seeds on all of the data in AqSolDB utilizing the Huber loss function, the SGD optimizer with momentum of 0.06, no weight decay, and a learning rate of 0.04.
 We dynamically stopped training after performance on the training set stopped improving for 8 epochs.
@@ -274,16 +274,9 @@ As we desire SolTranNet to be as fast as possible, we have elected to deploy a s
 The first part of the SolTranNet pipeline is to create the molecular graph representation of each input molecule's SMILE string.
 Part of this representation is the calculation of the distance matrix, which stores how far apart each atom is from every other atom.
 In the MAT implementation this matrix is calculated by using RDkit to generate a 3D conformer for the molecule, which can be a potentially costly process.
-Thus, as shown in Figure~\ref{fig:2dv3drmse} and Figure~\ref{fig:2dv3dr2}, we show that using a 2D or 3D conformer does not have a statistically significant difference on RMSE or $R^2$ for the first 10 hyper-parameter combinations of SolTranNet during the architecture sweep ($p=0.144$).
+Thus, as shown in Figure~\ref{fig:2dv3d}, we show that using a 2D or 3D conformer does not have a statistically significant difference on RMSE or $R^2$ for the first 10 hyper-parameter combinations of SolTranNet during the architecture sweep ($p=0.144$).
 As such, we did not train 3D versions of the models for the remainder of the sweep and instead used distances determined from the 2D representation of the molecule. 
 As the final model does not use distance information ($\lambda_2 = 0$), this matrix is not calculated, further accelerating predictions.
-
-\begin{figure}[tb]
-    \centering
-    \includegraphics[width=\linewidth]{figures/2dv3d_rmse.pdf}
-    \caption{The first 10 models of the SolTranNet architecture sweep RMSE performance dependent on if the distance matrix used 3D conformers of the molecules. There is no statistically significant difference between these two collections ($p=0.144$), however the mean performance is better for the 3D models (1.522 vs 1.608).}
-    \label{fig:2dv3drmse}
-\end{figure}
 
 \subsection{Salts and Rare Atom Types}
 In AqSolDB, salts are explicitly represented and consist of about 11.0\% of the available data.
@@ -326,8 +319,8 @@ Since these ``Other" typed atoms are potentially encountered in a drug discovery
 Lastly, we seek to benchmark the run-time performance of SolTranNet.
 For benchmarking, we determined the mean time it takes to go from a SMILES string to a solubility prediction for the 132 molecules provided by SC2.
 Table~\ref{tab:timings} shows the mean and standard deviation of 10 runs performed on a machine with an Nvidia Titan-XP graphics card, and using 1 core of an Intel(R) Core(TM) i7-4930K CPU.
-Notably, for the original MAT implementation, utilizing the 3D conformer generation takes 36 times longer when utilizing the GPU (4 times longer on CPU).
-SolTranNet, with its fewer number of parameters and skipping of the conformer generation process, runs 1.6 times faster on the GPU (9.7 times faster on CPU) than MAT utilizing the 2D conformer generation.
+Notably, for the original MAT implementation, utilizing the 3D conformer generation takes 36 times longer when utilizing the GPU (5 times longer on CPU).
+SolTranNet, with its fewer number of parameters and skipping of the conformer generation process, runs 1.6 times faster on the GPU (10.1 times faster on CPU) than MAT utilizing the 2D conformer generation.
 With our 2D implementation and running on a single GPU 1 million molecules can be predicted in 36.02 minutes.
 
 %This is for the version that is still calculating the distance matrix, even though it all gets 0'd out.
@@ -342,9 +335,9 @@ With our 2D implementation and running on a single GPU 1 million molecules can b
         \cline{2-3}
           &  GPU & CPU \\
          \hline
-         MAT 3D & 0.1233 (0.001928) & 0.1493 (0.002315) \\
-         MAT 2D & 0.003472 (0.00015) & 0.02968 (0.002516) \\
-         STN & 0.002132 (0.000018) & 0.0030451 (0.000058)\\
+         MAT 3D & 0.1252 (0.006005) & 0.1502 (0.003455) \\
+         MAT 2D & 0.003483 (0.00045) & 0.02849 (0.001584) \\
+         STN & 0.002225 (0.000041) & 0.002828 (0.000090)\\
          \hline
     \end{tabular}
     \caption{Mean time for the model to predict a solubility from a SMILES string for the original MAT implementation and SolTranNet (STN). The predictions were for the molecules in the Solubility Challenge 2 dataset. We report the mean and standard deviation (in parenthesis) for each model utilizing 10 runs in seconds per molecule. All predictions were performed on a machine with a Nvidia Titan-XP graphics card, and an Intel(R) Core(TM) i7-4930K CPU, with a batch size of 32.}
