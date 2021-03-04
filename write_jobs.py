@@ -11,8 +11,8 @@ parser=argparse.ArgumentParser(description="Create Training Jobs for hyper param
 #options that are the same for each run in the sweep
 parser.add_argument('--trainfile',type=str,default='',help='PATH to the training file you wish to use. For use with --testfile. Note this option supercedes --prefix and --fold.')
 parser.add_argument('--testfile',type=str,default='',help='PATH to the testing file you wish to use. For use with --trainfile.')
-parser.add_argument('--prefix',type=str,default='',help='PREFIX to the training and testing files you wish to use. Assumed to follow <prefix>_<train|test><fold>.csv. Requires --fold.')
-parser.add_argument('--fold',type=str,default='',help='Fold for the datafiles. Used in conjunction with --prefix.')
+parser.add_argument('--prefix',type=str,default='',help='PREFIX to the CCV training and testing files you wish to use. Assumed to follow <prefix>_<train|test><fold>.csv. Requires --fold.')
+parser.add_argument('--fold',type=str,default='',help='Fold for the CCV datafiles. Used in conjunction with --prefix.')
 parser.add_argument('--datadir',type=str,default='sweep',help='Absolute path to where the output of the training will be placed. Defaults to sweep')
 parser.add_argument('--savemodel',action='store_true',help='Flag to have the training save the final weights of the model')
 parser.add_argument('-e','--epochs',default=100,help='Maximum number of epochs to run the training for. Defaults to 100.')
@@ -21,13 +21,13 @@ parser.add_argument('--loss',type=str,default='huber',help='Loss function to be 
 
 
 #variable options
-parser.add_argument('--dropout',type=float,default=[0,0.1],nargs='+',help='Applying Dropout to model weights when training. Accepts any number of arguments. Defaults to 0.')
-parser.add_argument('--ldist',type=float,default=[0,0.33],nargs='+',help='Lambda for model attention to the distance matrix. Accepts any number of arguments. Defaults to 0.33 (even between dist, attention, and graph features)')
-parser.add_argument('--lattn',type=float,default=[0.25, 0.33, 0.5],nargs='+',help='Lambda for model attention to the attention matrix. Accepts any number of arguments. Defaults to 0.33 (even between dist, attenttion, and graph features)')
+parser.add_argument('--dropout',type=float,default=[0,0.1],nargs='+',help='Applying Dropout to model weights when training. Accepts any number of arguments. Defaults to [0,0.1].')
+parser.add_argument('--ldist',type=float,default=[0,0.33],nargs='+',help='Lambda for model attention to the distance matrix. Accepts any number of arguments. Defaults to [0,0.33]')
+parser.add_argument('--lattn',type=float,default=[0.25, 0.33, 0.5],nargs='+',help='Lambda for model attention to the attention matrix. Accepts any number of arguments. Defaults to [0.25,0.33,0.5]')
 parser.add_argument('--ndense',type=int,default=[1],nargs='+',help='Number of Dense blocks in FeedForward section. Accepts any number of arguments. Defaults to 1')
-parser.add_argument('--heads',type=int,default=[2,4,8,16,32],nargs='+',help='Number of attention heads in MultiHeaded Attention. Accepts any number of arguments. **Needs to evenly divide dmodel** Defaults to 16.')
-parser.add_argument('--dmodel',type=int,default=[2,4,8,16,32,64,128,256,512,1024],nargs='+',help='Dimension of the hidden layer for the model. Accepts any number of arguments. Defaults to 1024.')
-parser.add_argument('--nstacklayers',type=int,default=[2,4,6,8,16],nargs='+',help='Number of stacks in the Encoder layer. Accepts any number of arguments. Defaults to 8')
+parser.add_argument('--heads',type=int,default=[16,32,8,4,2],nargs='+',help='Number of attention heads in MultiHeaded Attention. Accepts any number of arguments. **Needs to evenly divide dmodel** Defaults to [16,32,8,4,2].')
+parser.add_argument('--dmodel',type=int,default=[1024,512,256,128,64,32,16,8,4,2],nargs='+',help='Dimension of the hidden layer for the model. Accepts any number of arguments. Defaults to [1024,512,256,128,64,32,16,8,4,2].')
+parser.add_argument('--nstacklayers',type=int,default=[16,8,6,4,2],nargs='+',help='Number of stacks in the Encoder layer. Accepts any number of arguments. Defaults to [16,8,6,4,2]')
 parser.add_argument('--seed',type=int,default=[420],nargs='+',help='Random seed for training the models. Accepts any number of arguments. Defaults to 420.')
 parser.add_argument('--dynamic',type=int,default=[0],nargs='+',help='If set, the maximum number of epochs a model can not improve on the training set before stopping training. Defaults to not being set. Can accept any number of arguments.')
 

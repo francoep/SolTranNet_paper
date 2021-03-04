@@ -87,7 +87,7 @@ else:
     else:
         outf_prefix=f'{namep}_{args.fold}_drop{args.dropout}_ldist{args.ldist}_lattn{args.lattn}_Ndense{args.Ndense}_heads{args.heads}_dmodel{args.dmodel}_nsl{args.nstacklayers}_epochs{args.epochs}_dyn{args.dynamic}_seed{args.seed}'
 
-if args.twod:
+if args.twod and '2d' not in args.prefix and '2d' not in args.trainfile:
     outf_prefix=outf_prefix.replace('_drop','_2d_drop')
 
 #wandb things
