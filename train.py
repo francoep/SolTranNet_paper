@@ -22,7 +22,7 @@ import pickle
 parser=argparse.ArgumentParser(description='Train and test MAT model on datasets. Use either --trainfile  & --testfile OR --prefix & --fold. --trainfile will be preferred if both are set.')
 parser.add_argument('--trainfile',type=str,default='',help='Specify training data file for model. Requires the use of --testfile.')
 parser.add_argument('--testfile',type=str,default='',help='Spefify testing data file for model. Used in conjunction with --trainfile.')
-parser.add_argument('--prefix',type=str,default='',help='Prefix for the train and test data. Assumed to follow <prefix>_train<fold>.csv. Requires --testfile.')
+parser.add_argument('--prefix',type=str,default='',help='Prefix for the train and test data. Assumed to follow <prefix>_train<fold>.csv. Requires --fold.')
 parser.add_argument('--fold',type=str,default='',help='Fold for the datafiles. Used in conjunction with --prefix')
 parser.add_argument('--datadir',type=str,default='sweep',help='Absolutepath to the directory for the data from training and testing the model (Def: sweep). Saved filenames will be <prefix>_<fold>_e<epochs>_<loss>_<optimizer>_lr<lr>_m<momentum>_wd<weightdecay>_<trainlosses|trainepochlosses|testdic>.pi')
 parser.add_argument('--savemodel', action='store_true',default=False,help='Flag to save the trained model. The filename will be <prefix>_<fold>_trained.model')
