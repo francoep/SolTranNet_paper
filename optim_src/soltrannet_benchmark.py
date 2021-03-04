@@ -34,6 +34,8 @@ parser.add_argument('--batchsize',default=[1,8,16,32,64],nargs='+',help='Batch s
 parser.add_argument('--numruns',default=10,help='Number of runs to perform per batchsize. Defaults to 10.')
 parser.add_argument('--cpu',action='store_true',help='Flag to force a CPU version of the model to be used.')
 parser.add_argument('--permolecule',action='store_true',help='Flag to divide the stats by the number of SMILES evaluate.')
+args=parser.parse_args()
+
 
 #importing the spcific versions of the model for testing.
 if args.cpu:
