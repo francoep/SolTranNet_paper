@@ -3,6 +3,7 @@ import numpy as np
 import argparse
 import time
 from transformer import make_model as make_dep_model
+import gzip
 
 def complex_measure_dep(model,list_of_smiles,batch_size=1):
     '''
@@ -65,7 +66,10 @@ model=make_dep_model(**model_params)
 if not args.cpu:
     model.to('cuda')
 
-smis=open(args.infile).readlines()
+if args.infile.endswith('.gz'):
+    smis=gzip.open(args.infile)
+else:
+    smis=open(args.infile).readlines()
 smis=[x.rstrip() for x in smis]
 
 for size in args.batchsize:
