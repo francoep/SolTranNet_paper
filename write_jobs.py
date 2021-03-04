@@ -40,15 +40,15 @@ args=parser.parse_args()
 combos=list(itertools.product([args.dropout,args.ldist,args.lattn,args.ndense,args.heads,args.dmodel,args.nstacklayers,args.seed,args.dynamic]))
 print(combos)
 with open(args.outname,'w') as outfile:
-	for c in combos:
+    for c in combos:
         drop,lam_dist,lam_attn,nden,head,dim,nsl,s,dyn=c
         print(drop,lam_dist,lam_attn,nden,head,dim,nsl,s,dyn)
-		sent=f'python3 train.py --trainfile {args.trainfile} --testfile{args.testfile} --datadir {args.datadir} --epochs {args.epochs} --lr {args.lr} --loss {args.loss} --dropout {drop} --ldist {lam_dist} --lattn {lam_attn} --Ndense {nden} --heads {head} --dmodel {dim} --nstacklayers {nsl} --seed {s} --dynamic {dyn}'
-		if args.twod:
-			sent+=' --twod'
-		if args.wandb:
-			sent+=f' --wandb {args.wandb}'
-		if args.cpu:
-			sent+=' --cpu'
+        sent=f'python3 train.py --trainfile {args.trainfile} --testfile{args.testfile} --datadir {args.datadir} --epochs {args.epochs} --lr {args.lr} --loss {args.loss} --dropout {drop} --ldist {lam_dist} --lattn {lam_attn} --Ndense {nden} --heads {head} --dmodel {dim} --nstacklayers {nsl} --seed {s} --dynamic {dyn}'
+        if args.twod:
+            sent+=' --twod'
+        if args.wandb:
+            sent+=f' --wandb {args.wandb}'
+        if args.cpu:
+            sent+=' --cpu'
 
-		outfile.write(sent+'\n')
+        outfile.write(sent+'\n')
