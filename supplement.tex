@@ -161,10 +161,19 @@
 \end{figure}
 
 \begin{figure}[tb]
-    \centering
-    \includegraphics[width=\linewidth]{figures/2dv3d_r2.pdf}
-    \caption{$R^2$ performance dependent on if the distance matrix of SolTranNet used 3D conformers of the molecules for the first 10 models we trained in our architecture sweep. There is no statistically significant difference between these two collections ($p=0.116$), but the mean performance of the 3D models is better than the 2D models (0.646 vs 0.614).}
-    \label{fig:2dv3dr2}
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/2dv3d_rmse.pdf}
+        \caption{There is no statistically significant difference between these two collections ($p=0.144$), however the mean performance is better for the 3D models (1.522 vs 1.608).}
+    \end{subfigure}%
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/2dv3d_r2.pdf}
+        \caption{There is no statistically significant difference between these two collections ($p=0.116$), but the mean performance of the 3D models is better than the 2D models (0.646 vs 0.614).}
+    \end{subfigure}
+    \caption{RMSE (a) and $R^2$ (b) performance for the first 10 models trained during the architecture sweep. There is no statistically significant difference between using 2D conformers or 3D conformers for generating the distance matrix used by SolTranNet.}
+    \label{fig:2dv3d}
 \end{figure}
 
 \begin{figure}[tb]
