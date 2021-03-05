@@ -4,10 +4,10 @@ The data sets and scripts used to generate the figures for SolTranNet (insert ci
 SolTranNet's implementation can be found [here](https://https://github.com/gnina/SolTranNet).
 
 ## Requirements
- - PyTorch 1.4 -- compiled with CUDA
- - Pandas 0.25.3
- - rdkit 2020.03.1dev1
- - CUDA 10.1+
+ - PyTorch 1.7 -- compiled with CUDA
+ - pandas 0.25.3+
+ - RDKit 2020.03.1dev1
+ - CUDA 10.1 or 10.2
 
 ## Recreating the Figures for the Paper
 
