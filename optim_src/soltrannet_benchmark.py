@@ -27,9 +27,9 @@ for size in args.batchsize:
         start=time.time()
         
         if args.cpu_predict:
-            predictions=list(stn.predict(smiles,batch_size=size, num_workers=args.cpus,device=torch.device('cpu')))
+            predictions=list(stn.predict(smis,batch_size=size, num_workers=args.cpus,device=torch.device('cpu')))
         else:
-            predictions=list(stn.predict(smiles,batch_size=size, num_workers=args.cpus))
+            predictions=list(stn.predict(smis,batch_size=size, num_workers=args.cpus))
         scpu_2d.append(time.time()-start)
 
     if args.permolecule:
