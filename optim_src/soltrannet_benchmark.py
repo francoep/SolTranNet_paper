@@ -1,7 +1,7 @@
 import soltrannet as stn
 import numpy as np
 import torch
-import argparse, gzip, multiprocessing
+import argparse, gzip, multiprocessing, time
 
 #setting up the arguments
 parser=argparse.ArgumentParser(description="Create Training Jobs for hyper parameter sweeps")
