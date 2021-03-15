@@ -317,30 +317,28 @@ Since these ``Other" typed atoms are potentially encountered in a drug discovery
 \subsection{Run-time Performance}
 
 Lastly, we seek to benchmark the run-time performance of SolTranNet.
-For benchmarking, we determined the mean time it takes to go from a SMILES string to a solubility prediction for the 132 molecules provided by SC2.
+For benchmarking, we determined the mean time it takes to go from a SMILES string to a solubility prediction for 1,000 molecules consisting of repeats of the 132 molecules provided by SC2.
 Table~\ref{tab:timings} shows the mean and standard deviation of 10 runs performed on a machine with an Nvidia Titan-XP graphics card, and using 1 core of an Intel(R) Core(TM) i7-4930K CPU.
-Notably, for the original MAT implementation, utilizing the 3D conformer generation takes 36 times longer when utilizing the GPU (5 times longer on CPU).
-SolTranNet, with its fewer number of parameters and skipping of the conformer generation process, runs 1.6 times faster on the GPU (10.1 times faster on CPU) than MAT utilizing the 2D conformer generation.
-With our 2D implementation and running on a single GPU 1 million molecules can be predicted in 36.02 minutes.
-
-%This is for the version that is still calculating the distance matrix, even though it all gets 0'd out.
-%I'm working on adding a row for the deployed version which skips this calculation entirely
-%It's still being coded, and then we need to train it and verify performance.
+Notably, for the original MAT implementation, utilizing the 3D conformer generation takes 34 times longer than 2D conformer generation when utilizing the GPU (5 times longer on CPU).
+SolTranNet, with its fewer number of parameters and skipping of the conformer generation process, runs 2.3 times faster on the GPU (12.0 times faster on CPU) than MAT utilizing the 2D conformer generation.
+Additionally, by implementing multiprocessing and running on a single GPU and 12 CPU cores, we are able predict 1 million molecules in 8.5 minutes.
+%With our 2D implementation and running on a single GPU, and 12 CPU cores 1 million molecules can be predicted in 8.5 minutes.
 
 \begin{table}
     %\centering
-    \begin{tabular}{|c|c|c|}
+    \begin{tabular}{|c|l|l|}
         \hline
         \multirow{2}{*}{Model}    & \multicolumn{2}{c|}{Mean Time (std) [s/mol]} \\ 
         \cline{2-3}
           &  GPU & CPU \\
          \hline
-         MAT 3D & 0.1252 (0.006005) & 0.1502 (0.003455) \\
-         MAT 2D & 0.003483 (0.00045) & 0.02849 (0.001584) \\
-         STN & 0.002225 (0.000041) & 0.002828 (0.000090)\\
+         MAT 3D & 0.1247 (0.002075) & 0.1501 (0.001071) \\
+         MAT 2D & 0.003638 (0.00039) & 0.02834 (0.001317) \\
+         STN 1 CPU & 0.001583 (0.000004) & 0.002352 (0.000033)\\
+         STN 12 CPU & 0.001058 (0.000019) & 0.001484 (0.000027)\\
          \hline
     \end{tabular}
-    \caption{Mean time for the model to predict a solubility from a SMILES string for the original MAT implementation and SolTranNet (STN). The predictions were for the molecules in the Solubility Challenge 2 dataset. We report the mean and standard deviation (in parenthesis) for each model utilizing 10 runs in seconds per molecule. All predictions were performed on a machine with a Nvidia Titan-XP graphics card, and an Intel(R) Core(TM) i7-4930K CPU, with a batch size of 32.}
+    \caption{Mean time for the model to predict a solubility from a SMILES string for the original MAT implementation and SolTranNet (STN). The predictions were for 1,000 molecules consisting of repeats of the SC2 dataset. We report the mean and standard deviation (in parenthesis) for each model utilizing 10 runs in seconds per molecule. All predictions were performed on a machine with a Nvidia Titan-XP graphics card, and an Intel(R) Core(TM) i7-4930K CPU, with a batch size of 32.}
     \label{tab:timings}
 \end{table}
 
@@ -391,19 +389,19 @@ For this threshold, SolTranNet has a sensitivity of 94.8\% and a false discovery
         \caption{Sensitivity of submitted predictions on the SC2 test sets. SolTranNet is shown in purple.}
     \end{subfigure}
     
-    \begin{subfigure}[t]{0.48\textwidth}
+    \begin{subfigure}[t]{0.32\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/fail_-4_solchal2.pdf}
         \caption{False discovery rates where a molecule is considered insoluble if its $LogS <=-4$ SolTranNet is shown in purple.}
     \end{subfigure}%
     \hfill
-    \begin{subfigure}[t]{0.48\textwidth}
+    \begin{subfigure}[t]{0.32\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/fail_-5_solchal2.pdf}
         \caption{False discovery rates where a molecule is considered insoluble if its $LogS <=-5$ SolTranNet is shown in purple.}
     \end{subfigure}
-    
-    \begin{subfigure}[t]{0.48\textwidth}
+    \hfill
+    \begin{subfigure}[t]{0.32\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/fail_-6_solchal2.pdf}
         \caption{False discovery rates where a molecule is considered insoluble if its $LogS <=-6$ SolTranNet is shown in purple.}
@@ -448,8 +446,8 @@ SolTranNet achieves comparable classification performance to the other methods s
 
 We have shown that SolTranNet, through its molecule attention transformer architecture, is amenable to predicting aqueous solubility from the SMILES string of a molecule, and outperforms linear ML approaches.
 During our hyperparameter optimization in Table~\ref{tab:solsearchrmse} and Table~\ref{tab:solsearchr2}, we demonstrate that models with more parameters do not perform better in our scaffold-based CCV splits and also exhibit worse performance on an independent test set.
-The smaller size of SolTranNet and removal of the distance matrix calculation makes it run 58 times faster than the original MAT implementation (Table:\ref{tab:timings}).
-SolTranNet performs comparably well to other current ML based models, as shown in Table~\ref{tab:othersetsrmse},\ref{tab:othersetsr2} and Figure~\ref{fig:sc2redo}.
+The smaller size of SolTranNet, removal of the distance matrix calculation, and implementation of multiprocessing makes it run more than 100 times faster than the original MAT implementation (Table:\ref{tab:timings}).
+SolTranNet performs comparably well to other current ML based models, as shown in Table~\ref{tab:othersetsrmse}, \ref{tab:othersetsr2} and Figure~\ref{fig:sc2redo}.
 We have deployed SolTranNet as a \textsc{pip} installable package for easy integration into drug discovery pipelines, and its source code is available under an Apache open source license at \url{https://github.com/gnina/SolTranNet}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
