@@ -70,6 +70,35 @@
     %\centering
     \begin{tabular}{|c|c|c|c|c|c|c|}
         \hline
+         Model & Parameters & CCV RMSE & Fold0 RMSE & Fold1 RMSE & Fold2 RMSE & Ind RMSE \\
+         \hline
+         MAT & 42,049,537 & 2.007 & 1.231 & 3.075 & 1.058 & 2.113  \\
+         \hline
+         0 & 21,061,633 & 1.449 & 1.161 & 1.959 & 1.054 & 1.914 \\
+         1 & 502,529 & 1.467 & 1.231 & 1.972 & 1.028 & 1.946 \\
+         2 & 336,385 & 1.377 & 1.260 & 1.682 & 1.126 & 1.870 \\
+         3 & 336,385 & 1.454 & 1.239 & 1.857 & 1.165 & 1.949 \\
+         4 & 22,657 & 1.297 & 1.187 & \textbf{1.582} & 1.066 & 1.903 \\
+         5 & 11,905 & \textbf{1.271} & \textbf{1.130} & 1.605 & \textbf{0.998} & 1.923 \\
+         6 & 11,905 & 1.350 & 1.272 & 1.680 & 1.012 & 1.903\\ \hline \hline
+         7 & 3,393 & 1.459 & 1.172 & 1.916 & 1.159 & \textbf{1.779}\\ \hline \hline
+         8 & 2,609 & 1.376 & 1.169 & 1.788 & 1.055  & 1.973 \\
+         9 & 2,609 & 1.454 & 1.252 & 1.919 & 1.043  & 1.973 \\
+         \hline \hline
+         Elastic & 1,463 & 1.835 & 1.843 & 1.965 & 1.687  & 2.090\\
+         Lasso & 1,077 & 1.876 & 1.914 & 1.984 & 1.719 & 2.136\\
+         PLS & 2,048 & 2.413 & 3.085 & 2.082 & 1.902 & 2.081\\
+         Ridge & 2,048 & 2.239 & 2.503 & 2.032 & 2.155 & 2.312 \\
+         \hline
+    \end{tabular}
+    \caption{SolTranNet model hyperparameter search for predicting solubility RMSE on the scaffold-based clustered cross-validation splits of AqSolDB (CCV) and our independent test set (Ind). Additionally, all models outperform linear approaches trained on RDKit fingerprints using scikit-learn\cite{scikit-learn}. The isolated row (model 7) is the final SolTranNet architecture.}
+    \label{tab:solsearchrmse}
+\end{table}
+
+\begin{table}
+    %\centering
+    \begin{tabular}{|c|c|c|c|c|c|c|}
+        \hline
          Model & Parameters & CCV $R^2$ & Fold0 $R^2$ & Fold1 $R^2$ & Fold2 $R^2$ & Ind $R^2$ \\
          \hline
          MAT & 42,049,537 & 0.532 & 0.751 & 0.332 & 0.715 & 0.375  \\
@@ -80,8 +109,8 @@
          3 & 336,385 & 0.672 & 0.764 & 0.539 & 0.685 & 0.4461 \\
          4 & 22,657 & \textbf{0.724} & 0.780 & \textbf{0.626} & 0.716 & 0.4831 \\
          5 & 11,905 & \textbf{0.723} & \textbf{0.793} & 0.595 & 0.744 & 0.4628 \\
-         6 & 11,905 & 0.713 & 0.786 & 0.582 & \textbf{0.756} & 0.4517 \\
-         \emph{7} & \emph{3,393} & \emph{0.6764} & \emph{0.7914} & \emph{0.5243} & \emph{0.7424} & \emph{\textbf{0.5528}}\\
+         6 & 11,905 & 0.713 & 0.786 & 0.582 & \textbf{0.756} & 0.4517 \\ \hline \hline
+         7 & 3,393 & 0.6764 & 0.7914 & 0.5243 & 0.7424 & \textbf{0.5528}\\ \hline \hline
          8 & 2,609 & 0.695 & 0.779 & 0.545 & 0.737  & 0.4589\\
          9 & 2,609 & 0.677 & 0.767 & 0.552 & 0.720  & 0.4678\\
          \hline
@@ -91,7 +120,7 @@
          Ridge & 2,048 & 0.319 & 0.289 & 0.354 & 0.291 & 0.261 \\
          \hline
     \end{tabular}
-    \caption{SolTranNet hyperparameter search correlations. There is a general trend of models with fewer parameters performing better. Additionally, all models significantly outperform linear ML approaches. The model in italics is the final model selection.}
+    \caption{SolTranNet hyperparameter search correlations. There is a general trend of models with fewer parameters performing better. Additionally, all models significantly outperform linear ML approaches. The isolated row (model 7) is the final SolTranNet.}
     \label{tab:solsearchr2}
 \end{table}
 
@@ -128,6 +157,20 @@
     \caption{Boxplots of the performance of SolTranNet models on our independent test set using various dynamic stopping criteria. The Dynamic Stopping is the number of epochs that the model can fail to improve its fit to the training set before training is stopped. The boxplot is of 5 different seeds, with the ensemble performance shown with the blue dot. Interestingly, the ensemble outperforms the mean performance of the 5 models, but fails to be better than the best performing seed in all cases.}
     \label{fig:dynsweep}
 \end{figure}
+
+\begin{table}
+    \begin{tabular}{|c|c|c|c|c|}
+        \hline
+        Model & Train RMSE & Test RMSE & Train $R^2$ & Test $R^2$ \\
+        \hline
+        Average of 5 Seeds & 1.171 (0.0504) & 1.878 (0.0925)  & 0.784 (0.00643) & 0.509 (0.0445)\\
+        Ensemble & \textbf{1.068} & 1.814 & \textbf{0.798} & 0.517\\
+        Deployed & 1.144 & \textbf{1.711} & 0.777 & \textbf{0.577}\\
+        \hline
+    \end{tabular}
+    \caption{Performance of 5 different seeds of SolTranNet. Each model was trained on all of AqSolDB and tested on our independent test set. We note that the ensemble outperforms each model on average, but fails to beat the best performing seed. Deployed refers to the single best performing model.}
+    \label{tab:deployed}
+\end{table}
 
 \begin{figure}[tb]
     \centering
@@ -174,6 +217,31 @@
     \end{subfigure}
     \caption{RMSE (a) and $R^2$ (b) performance for the first 10 models trained during the architecture sweep. There is no statistically significant difference between using 2D conformers or 3D conformers for generating the distance matrix used by SolTranNet.}
     \label{fig:2dv3d}
+\end{figure}
+
+\begin{figure}[tb]
+    \centering
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/full_saltfragfirst_RMSEs_boxplots.pdf}
+    \end{subfigure}%
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/othersMW_saltfragfirst_RMSEs_boxplots.pdf}
+    \end{subfigure}
+    
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/others2plus_saltfragfirst_RMSEs_boxplots.pdf}
+    \end{subfigure}%
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/noothers_saltfragfirst_RMSEs_boxplots.pdf}
+    \end{subfigure}
+    \caption{RMSE of 5 different SolTranNet trained on the scaffold split of AqSolDB. The horizontal axis is dependent on if the salts were fragmented in the test set, while the colors of the boxplot are dependent on if the salts were fragmented in the training set. Each plot has successively fewer data points in the training and testing sets by more stringently removing atoms which would be embedded as ``Other type'' during training. There is no statistically significant difference in performance on the test set between training on Normal, or Fragmented Salts for all sets.}
+    \label{fig:saltfragrmse}
 \end{figure}
 
 \begin{figure}[tb]
