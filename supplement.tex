@@ -62,7 +62,7 @@
         \end{tabular}
         \label{tab:archsweep}
     }
-    \caption{Two stage hyperparameter sweep for SolTranNet. The Optimizer sweep was performed via using Weights and Bias's hyperband sweeping tool, with the target to minimize the test set RMSE. The Architecture sweep was a grid search over the listed parameters after the optimizer hyperparameters were set from the first stage. The deployed version of SolTranNet uses the hyperparameters in bold.}
+    \caption{Two stage hyperparameter sweep for SolTranNet. The Optimizer sweep was performed via using Weights and Bias's hyperband sweeping tool using Bayesian optimization (during which all values in ranges are considered), with the target to minimize the test set RMSE. The Architecture sweep was a grid search over the listed parameters after the optimizer hyperparameters were set from the first stage. The deployed version of SolTranNet uses the hyperparameters in bold.}
     \label{tab:wandsweep}
 \end{figure}
 
@@ -299,15 +299,97 @@
 
 \begin{figure}[tb]
     \centering
-    \begin{subfigure}[t]{0.48\textwidth}
+    \begin{subfigure}[t]{0.33\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{figures/}
+        \includegraphics[width=\linewidth]{figures/stn_deployed_pred_esol0.pdf}
     \end{subfigure}%
     \hfill
-    \begin{subfigure}[t]{0.48\textwidth}
+    \begin{subfigure}[t]{0.33\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{figures/othersMW_saltfragfirst_RMSEs_boxplots.pdf}
+        \includegraphics[width=\linewidth]{figures/stn_deployed_pred_esol1.pdf}
+    \end{subfigure}%
+    \hfill
+    \begin{subfigure}[t]{0.33\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/stn_deployed_pred_esol2.pdf}
     \end{subfigure}
+    
+    \begin{subfigure}[t]{0.33\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/stn_deployed_pred_esol3.pdf}
+    \end{subfigure}%
+    \hfill
+    \begin{subfigure}[t]{0.33\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/stn_deployed_pred_esol4.pdf}
+    \end{subfigure}%
+    \hfill
+    \begin{subfigure}[t]{0.33\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/stn_deployed_pred_esol5.pdf}
+    \end{subfigure}
+    \caption{Plots of the Deployed SolTranNet model predicting the test sets for each of the random ESOL splits. The predictions have high correlation ($R^2$=0.890), but are noticeably biased towards predicting a lower logS value.}
+    \label{fig:stndepesol}
 \end{figure}
 
+
+\begin{figure}[tb]
+    \centering
+    \begin{subfigure}[t]{0.33\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/stn_esol0_pred_aqsol.pdf}
+    \end{subfigure}%
+    \hfill
+    \begin{subfigure}[t]{0.33\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/stn_esol1_pred_aqsol.pdf}
+    \end{subfigure}%
+    \hfill
+    \begin{subfigure}[t]{0.33\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/stn_esol2_pred_aqsol.pdf}
+    \end{subfigure}
+    
+    \begin{subfigure}[t]{0.33\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/stn_esol3_pred_aqsol.pdf}
+    \end{subfigure}%
+    \hfill
+    \begin{subfigure}[t]{0.33\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/stn_esol4_pred_aqsol.pdf}
+    \end{subfigure}%
+    \hfill
+    \begin{subfigure}[t]{0.33\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/stn_esol5_pred_aqsol.pdf}
+    \end{subfigure}
+    \caption{Plots of SolTranNet trained on the random splits of ESOL predicting AqSol. The predictions have low correlation ($R^2=0.552$), and fail to predict a logS below -4, as such a sample was never seen during training.}
+    \label{fig:stnesolaqsol}
+\end{figure}
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics{figures/esol_stn_hist.pdf}
+    \caption{Training distributions of AqSol (blue) and ESOL (orange). Bin width is half a log unit. Notably, AqSol covers a much wider range of possible solubility values, with the 28\% of the data in AqSol being below any value in ESOL.}
+    \label{fig:esol_hist}
+\end{figure}
+
+\begin{table}
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+        Training Set & Testing Set & RMSE & $R^2$ \\
+    \hline
+        ESOL & AqSol & 3.33 (0.037) & 0.552 (0.0062) \\
+        AqSol & AqSol & 1.16 & 0.77 \\
+    \hline
+    \hline
+        AqSol & ESOL & 2.99 (0.11) & 0.89 (0.021) \\
+        ESOL & ESOL & 0.289 (0.011) & 0.915 (0.011) \\
+    \hline    
+    \end{tabular}
+    \caption{SolTranNet comparison of performance utilizing ESOL or AqSol. Models tested on AqSol are tested on the entire AqSol dataset. Thus the AqSol-AqSol model is simply reporting its performance on its own training set (and is only a singular model). The models utilizing ESOL are either training or testing on the 6 provided random splits of ESOL from the original MAT publication.}
+    \label{tab:my_label}
+\end{table}
 \end{document}
