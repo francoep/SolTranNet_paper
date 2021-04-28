@@ -281,8 +281,11 @@
 \begin{table}
     \begin{tabular}{|c|c|c|c|c|c|}
         \hline
-         Dataset & Reported $R^2$ & STN Training $R^2$ &  STN Best $R^2$ & STN Deployed $R^2$ & Overlap \\
+         Dataset & Reported $R^2$ & Training $R^2$ &  Best $R^2$ & Deployed $R^2$ & Overlap \\
         \hline
+        ESOL MAT & -- & 0.911 (0.0151) & -- & -- & 1128/1128 \\
+        ESOL STN & -- & 0.915 (0.0106) & -- & 0.890 (0.021) & 1119/1128 \\
+        \hline 
          Cui2020 & 0.412 & 0.589(0.0244) & 0.611 &  0.656 & 0/62 \\
         Boobier2017 & 0.706 &  0.543(0.142) & 0.724 &  0.773 & 23/25 \\
         Louvric2020 &  -- & 0.709(0.0537) & 0.783 & 0.744(0.0345) & 151.4/166 \\
@@ -293,5 +296,18 @@
     \caption{Performance of SolTranNet (STN) on other published datasets. For SolTranNet training, we trained 5 different seeds of our final architecture on the provided training and testing splits and report the mean and standard deviation. The SolTranNet Deployed column is using our final deployed model to predict the provided test set. The final column is the overlap of the provided test set with our deployed model's training set. Notably the Louvric set had 5 different randomly selected splits for training and testing, which is why there is a mean in the Deployed and Overlap columns.}
     \label{tab:othersetsr2}
 \end{table}
+
+\begin{figure}[tb]
+    \centering
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/}
+    \end{subfigure}%
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/othersMW_saltfragfirst_RMSEs_boxplots.pdf}
+    \end{subfigure}
+\end{figure}
 
 \end{document}

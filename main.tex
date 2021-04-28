@@ -1,4 +1,4 @@
-\documentclass[journal=jmcmar,manuscript=article]{achemso}
+\documentclass[journal=jcim,manuscript=applicationnotes]{achemso}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -47,6 +47,7 @@ frame=single
 \myexternaldocument{supplement}
 \newcommand*\mycommand[1]{\texttt{\emph{#1}}}
 
+\setkeys{acs}{maxauthors = 0}
 
 \title{SolTranNet -- A machine learning tool for fast aqueous solubility prediction.}
 \keywords{deep learning, machine learning, molecular property prediction, solubility, tool}
@@ -98,7 +99,7 @@ SolTranNet is distributed via \textsc{pip}, and its source code is available at 
 %% Introduction and Background
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
-Aqueous solubility is an important physiochemical property for drug discovery, in part due to humans being 60\% water\cite{HumanWater} and water being the primary solvent in most assays. 
+Aqueous solubility is an important physicochemical property for drug discovery, in part due to humans being 60\% water\cite{HumanWater} and water being the primary solvent in most assays. 
 Besides absorption into the body, a drug's behavior in water is linked to its distribution and elimination in the body.
 Consequently, lack of aqueous solubility can potentially result in failure throughout the drug discovery pipeline.\cite{LIPINSKI1997,DI2006446,EKINS2002305}
 Ideally, one would directly measure the solubility of a given compound.
@@ -108,8 +109,7 @@ Thus there is a need for fast and accurate solubility prediction as an accessory
 
 Predicting aqueous solubility for a given molecule is typically performed with one of three methods: molecular simulation, quantum calculations, or an empirically fit function.
 Molecular simulation approaches utilize statistical mechanics and either directly calculate the solubility from the chemical potentials of the solute and water\cite{denseStates}, or directly simulate the solute in explicit water molecules.
-For direct simulation of the solute, there are several methods available as reviewed by \citet{solrev1}.
-However, each of these approaches use a large amount of computing power, and in the case of direct simulation also require a long time to reach equilibrium.
+For direct simulation of the solute there are several methods available, as reviewed by\citet{solrev1}, which all use a large amount of computing power, and in the case of direct simulation also require a long time to reach equilibrium.
 
 Quantum mechanics (QM) based approaches operate at a higher level of theory than simulation and are divided into two broad categories based on if the solvent is included in the calculation. 
 Full QM methods include the water molecules in their calculations and are based on density functional theory\cite{solrev1}.
@@ -219,6 +219,7 @@ Additionally, as we intend for this tool to be deployed for use very large datas
 The final architecture of SolTranNet utilized the following hyperparameters: 0.1 dropout, 0 lambda distance, 0.5 lambda attention, 2 attention heads, a hidden dimension of size 8, and 8 stacks in the transformer encoding layer. 
 A 2D molecular representation was selected because it provided statistically equivalent results to 3D representations (Figure~\ref{fig:2dv3d}) without the computational burden of generating a 3D conformation or computing a distance matrix.
 The molecular embedding layer was unchanged from the initial MAT implementation\cite{MAT} where each atom is represented as a node with a feature vector as shown in Fig~\ref{tab:atomembed}.
+We also note that our molecular embedding layer calculates the features for the molecular graph from the RDKit's mol object of each SMILES, which ensures consistency of results across different SMILES canonicalisations.
 In order to select the final deployed model, we trained 5 models with different random seeds on all of AqSolDB utilizing the Huber loss function, the SGD optimizer with momentum of 0.06, no weight decay, and a learning rate of 0.04.
 We dynamically stopped training after performance on the training set stopped improving for 8 epochs.
 After which we selected the model architecture with the best average RMSE performance on our independent test set and selected the best performing model from within that architecture class (Fig~\ref{fig:dynsweep}).
@@ -264,16 +265,16 @@ These two groups overlap by 75.2\% and 83.9\% respectively; that is, unusual ato
 Thus, we investigate the effect of fragmenting salts (only keeping the largest component) and removing successively larger molecules with ``Other'' typed atoms from the training data (Figure~\ref{fig:saltfragrmse},\ref{fig:saltfragr2}).
 For all comparisons between identical test sets, there is no statistically significant difference between training on the full salt or the fragmented salt for the RMSE evaluations.
 We note that when removing molecules containing any ``Other'' typed atom, training on fragmented salts performed better for the $R^2$ evaluation when testing with fragmented salts without losing performance on testing with normal salts (Figure~\ref{fig:noothersdf2}).
-We train on the full salt since it allows less prepossessing for the user.
+We train on the full salt since it allows less preprossessing for the user.
 Additionally, removing more ``Other'' typed molecules from the training and testing data results in performance gains, as expected.
 Since these ``Other'' typed atoms are potentially encountered during drug discovery, we kept them in SolTranNet's training set, but have these molecules raise a warning.
 
 \subsection{Run-time Performance}
 
-To benchmark SolTranNet, we determined the mean time for a solubility prediction from a SMILES string for 1,000 molecules (repeats of the 132 SC2 molecules).
+To benchmark SolTranNet, we determined the mean time for a solubility prediction from SMILES strings for 1,000 molecules (repeats of the 132 SC2 molecules).
 Table~\ref{tab:timings} shows the mean and standard deviation of 10 runs performed with a Nvidia Titan-XP graphics card, and using 1 core of an Intel(R) Core(TM) i7-4930K CPU.
 For the original MAT implementation, utilizing 3D conformer generation takes 34 times longer than 2D conformer generation on GPU (5 times longer on CPU).
-SolTranNet, with fewer number of parameters and skipping conformer generation, runs 2.3 times faster on GPU (12.0 times faster on CPU) than MAT utilizing the 2D conformer generation.
+SolTranNet, with fewer parameters and skipping conformer generation, runs 2.3 times faster on GPU (12.0 times faster on CPU) than MAT utilizing the 2D conformer generation.
 Additionally, by implementing multiprocessing and running on a single GPU and 12 CPU cores, we are able predict 1 million molecules in 8.5 minutes.
 
 \begin{table}
@@ -297,11 +298,13 @@ Additionally, by implementing multiprocessing and running on a single GPU and 12
 
 \subsection{SolTranNet Performance on Other Datasets}
 
-In order to compare SolTranNet to other methods, we evaluated SolTranNet on four recently published solubility training and testing sets\cite{lovric,boobier,cui,llinas} (Table~\ref{tab:othersetsrmse},\ref{tab:othersetsr2}).
+In order to compare SolTranNet to other methods, we first verified SolTranNet's performance on ESOL\cite{esol} as in the MAT publication, and then evaluated SolTranNet on four recently published solubility training and testing sets\cite{lovric,boobier,cui,llinas} (Table~\ref{tab:othersetsrmse},\ref{tab:othersetsr2}).
 To provide fair comparisons, we evaluate models trained with the provided training and testing data, and the deployed version of SolTranNet (trained on AqSolDB).
 For each comparison we initially trained five models with the same dynamic stopping criteria as our training.
-However, for the datasets provided by \citet{lovric} and \citet{boobier}, this performed very poorly and stopped training early, due to their smaller size  (530 and 75 molecules respectively) as compared to our AqSolDB training sets (6655 CCV and 9982 full).
-As such, we trained new models for 1000 and 500 epochs respectively for those sets.
+However, for the datasets provided by ESOL\cite{esol}, \citet{lovric}, and \citet{boobier}, this performed very poorly and stopped training early, due to their smaller size  (1128, 530 and 75 molecules respectively) as compared to our AqSolDB training sets (6655 CCV and 9982 full).
+As such, we trained new models for 1000, 1000, and 500 epochs respectively for those sets.
+Reassuringly, our implementation of the original MAT architecture and SolTranNet exhibit no statistically significant difference in performance when training with the provided ESOL random splits (p=0.073 and p=0.26 respectively).
+Notably, the deployed version of SolTranNet has much worse performance on the ESOL splits ($RMSE=2.99$), but maintains a high correlation ($R^2=0.890$).
 For the datasets provided by \citet{cui}, \citet{lovric}, and \citet{boobier}, SolTranNet's best performing model trained on the provided datasets achieves similar results to the method reported in the respective paper.
 However, for the SC2 data\cite{llinas}, SolTranNet has much worse performance than the top submitted method and ranks in the lower quarter of the submitted methods.
 
@@ -309,7 +312,10 @@ However, for the SC2 data\cite{llinas}, SolTranNet has much worse performance th
     \centering
     \begin{tabular}{|c|c|c|c|c|c|}
         \hline
-        Dataset &  Reported & STN Training &  STN Best & STN Deployed & Overlap \\
+        Dataset &  Reported & Training &  Best & Deployed & Overlap \\
+        \hline
+        ESOL MAT & 0.278 (0.20) & 0.306 (0.027) & -- & -- & 1128/1128 \\
+        ESOL STN & 0.278 (0.20) & 0.289 (0.011) & -- & 2.99 (0.108) & 1119/1128 \\
         \hline
         Cui2020 & 0.681 & 0.860 (0.215) & 0.624 & 0.813 & 0/62 \\
         Boobier2017 & 0.985 & 1.274 (0.178) & 1.010 & 0.845 & 23/25 \\
@@ -318,7 +324,7 @@ However, for the SC2 data\cite{llinas}, SolTranNet has much worse performance th
         Llinas2020 set2 & 1.060 & 1.811 (0.328) & 1.243 & 1.295 & 18/32 \\
         \hline
     \end{tabular}
-    \caption{RMSE performance of SolTranNet (STN) on other published datasets. For SolTranNet Training, we trained five different seeds of our final architecture on the provided training and testing splits and report the mean and standard deviation (in parentheses). The SolTranNet Deployed column is using our final deployed model to predict the provided test set. The final column is the overlap of the provided test set with our deployed model's training set. Notably the Lovric set had five different randomly selected splits for training and testing, which is why there is a mean in the Deployed and Overlap columns.}
+    \caption{RMSE performance of SolTranNet (STN) on other published datasets. The first two rows are testing the original MAT implementation on ESOL, and then testing SolTranNet's implementation. For both the orignal MAT and SolTranNet implementation, there is no difference between our training and the reported result (p=0.073 and p=0.26 respectively). For SolTranNet Training, we trained five different seeds of our final architecture on the provided training and testing splits and report the mean and standard deviation (in parentheses). The SolTranNet Deployed column is using our final deployed model to predict the provided test set. The final column is the overlap of the provided test set with our deployed model's training set. Notably the Lovric set had five different randomly selected splits for training and testing, which is why there is a mean in the Deployed and Overlap columns.}
     \label{tab:othersetsrmse}
 \end{table}
 
@@ -413,6 +419,10 @@ We have deployed SolTranNet via \textsc{pip} for easy integration into drug disc
 
 We thank Andrew McNutt and Jonathan King for their contributions during manuscript preparation.
 
+\subsection{Data and Software}
+SolTranNet is open source and available under the Apache2.0 license. SolTranNet is available via \textsc{pip} installation for \textsc{python3}, and the source code is available at \url{https://github.com/gnina/SolTranNet}. All datasets and code used for the analysis in this paper is available at \url{https://github.com/francoep/SolTranNet_paper}
+
+\subsection{Funding Sources}
 This work is supported by R01GM108340 from the National Institute of General Medical Sciences and a GPU donation from the NVIDIA corporation.
 
 \end{acknowledgement}
