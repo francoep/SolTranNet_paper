@@ -168,7 +168,7 @@
         Deployed & 1.144 & \textbf{1.711} & 0.777 & \textbf{0.577}\\
         \hline
     \end{tabular}
-    \caption{Performance of 5 different seeds of SolTranNet. Each model was trained on all of AqSolDB and tested on our independent test set. We note that the ensemble outperforms each model on average, but fails to beat the best performing seed. Deployed refers to the single best performing model.}
+    \caption{Performance of 5 different seeds of SolTranNet. Each model was trained on all of AqSolDB and tested on our independent test set. The first row reports the mean and standard deviation (in parenthesis) for 5 models trained with different random seed. The second row is the ensemble performance of the models from the first row, with the final row being the results of the single best performing model. We note that the ensemble outperforms each model on average, but fails to beat the best performing seed. Deployed refers to the single best performing model.}
     \label{tab:deployed}
 \end{table}
 
@@ -293,7 +293,7 @@
         LLinas2020 set2 & 0.75 & 0.769(0.0346) & 0.824 & 0.726 & 18/32 \\
         \hline
     \end{tabular}
-    \caption{Performance of SolTranNet (STN) on other published datasets. For SolTranNet training, we trained 5 different seeds of our final architecture on the provided training and testing splits and report the mean and standard deviation. The SolTranNet Deployed column is using our final deployed model to predict the provided test set. The final column is the overlap of the provided test set with our deployed model's training set. Notably the Louvric set had 5 different randomly selected splits for training and testing, which is why there is a mean in the Deployed and Overlap columns.}
+    \caption{Performance of SolTranNet (STN) on other published datasets. For SolTranNet training, we trained 5 different seeds of our final architecture on the provided training and testing splits and report the mean and standard deviation (in parenthesis). The SolTranNet Deployed column is using our final deployed model to predict the provided test set. The final column is the overlap of the provided test set with our deployed model's training set, as no attempt was made to remove molecules present in the test set from the deployed model's training set. Notably the Louvric set had 5 different randomly selected splits for training and testing, which is why there is a mean in the Deployed and Overlap columns.}
     \label{tab:othersetsr2}
 \end{table}
 
@@ -389,7 +389,7 @@
         ESOL & ESOL & 0.289 (0.011) & 0.915 (0.011) \\
     \hline    
     \end{tabular}
-    \caption{SolTranNet comparison of performance utilizing ESOL or AqSol. Models tested on AqSol are tested on the entire AqSol dataset. Thus the AqSol-AqSol model is simply reporting its performance on its own training set (and is only a singular model). The models utilizing ESOL are either training or testing on the 6 provided random splits of ESOL from the original MAT publication.}
-    \label{tab:my_label}
+    \caption{SolTranNet comparison of performance utilizing ESOL or AqSol. Models tested on AqSol are tested on the entire AqSol dataset. Thus the AqSol-AqSol model is simply reporting its performance on its own training set (and is only a singular model). The models utilizing ESOL are either training or testing on the 6 provided random splits of ESOL from the original MAT publication. We report the mean performance, with the standard deviation in parenthesis. Note, no attempt was made to remove molecules present in the test set from the training set. You can see the predictions for the swapped sets in Fig~\ref{fig:stndepesol}-\ref{fig:stnesolaqsol} and the histogram of the solubilites in AqSol and ESOL in Fig~\ref{fig:esol_hist}. Notably, models trained with either set and tested on the other exhibit poor RMSE. However, models trained on ESOL fail to generalize their predictions to values outside of the range seen in training, which contributes to the low $R^2$ of their predictions on AqSol. This leads to a model trained on ESOL to be less useful as a screen, since it is likely to misclassify soluble molecules. The reverse situation does not occur, where a model trained on AqSol maintains a high Pearson's $R^2$ on ESOL, which makes it more suitable in a screening context.}
+    \label{tab:esolaqsol}
 \end{table}
 \end{document}
