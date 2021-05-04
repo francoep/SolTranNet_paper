@@ -133,7 +133,7 @@ This feature vector is combined with an adjacency matrix describing the connecti
 The authors utilized MAT for a variety of molecular property prediction tasks, and performed well at solubility prediction without optimizing for this task.
 
 While ML approaches have become more common for predicting aqueous solubility, there is still a lack of readily available tools.
-Extensive code bases, such as DeepChem\cite{deepchem} and Chemprop\cite{chemprop}, contain training data and support for predicting aqueous solubility, it remains the burden of the user to train new models if they wish to use the software.
+Extensive code bases, such as DeepChem\cite{deepchem} and Chemprop\cite{chemprop}, contain training data and support for predicting aqueous solubility, but it remains the burden of the user to train new models if they wish to use the software.
 Similarly, while there were 37 participants in SC2, the provided information is not enough to recreate the models that were used to generate their predictions.
 For example, we know the general architecture (e.g. artificial neural networks) and training data that a particular submitter used, but do not know the hyperparameters of the architecture, nor how long the model was trained.
 As such, there is an unmet need for a ML based solubility predictor that is easy to deploy and use.
@@ -175,6 +175,11 @@ as well as a Python module:
 
 \subsection{Datasets}
 AqSolDB\cite{AqSol} is the dataset we utilized for training SolTranNet, as it was the largest publicly available set.
+AqSolDB spans a wide range of solubility values (Fig~\ref{fig:esol_hist}) and is collated from differing datasets, most of which controlled for temperature.
+Notably, during this collation process, AqSolDB only screened for identical molecules, and did not verify if the solubility measurements in its datasets were measured in buffered conditions, water, or at what pH the measurement was taken.
+This is especially noteworthy as differing these conditions can change the measurement by orders of magnitude.  However, an expansive solubility dataset controlled for all these factors is not currently available.
+Additionally, from our previous work\cite{cd2020}, we have observed that neural network models tend to perform better with larger datasets, even if the data contains more noise.
+Thus, we elected to utilize AqSolDB for our training set over the smaller ESOL\cite{esol} which was used in the original MAT publication\cite{MAT}, a comparative analysis of which can be found in Fig~\ref{fig:stndepesol}-\ref{fig:stnesolaqsol} and Table~\ref{tab:esolaqsol}.
 Notably, while there are many other features available in AqsolDB, we only utilized the included SMILES strings and the reported solubilities (logS, S in mol/L).
 We then utilized RDkit\cite{rdkit} to calculate the Murcko scaffolds of the molecules, in order to cluster the molecules and generate a 3-fold clustered cross-validation (CCV) split of the data.
 We additionally created a withheld test set out of the molecules present in the SC2 test sets \cite{llinas} and FreeSolv \cite{freesolv}, such that no molecule in the withheld test set has an RDkit fingerprint similarity of greater than or equal to 0.9 to any molecule in AqSolDB.
@@ -193,7 +198,7 @@ As such, we filtered AqSolDB such that there was no overlap with any molecule pr
 The general architecture of the MAT model is provided in Figure~\ref{fig:architecture}.
 In order to optimize the hyperparameters for SolTranNet, we utilized a 2 stage optimization procedure (Table~\ref{tab:wandsweep}).
 All hyperparameter optimizations were performed utilizing the Weights and Biases platform\cite{wandb}.
-The first stage was a hyperband search over hyperparameters related to the model optimizer (Figure~\ref{tab:initsweep}). 
+The first stage was a Bayesian with hyperband stopping criteria search over hyperparameters related to the model optimizer (Figure~\ref{tab:initsweep}). 
 The objective of this search was to minimize the RMSE of the test set for the first fold of the CCV scaffold split of AqSolDB.
 This resulted in the selection of the Huber loss function, the stochastic gradient descent (SGD) optimizer with momentum of 0.06, no weight decay, and a learning rate of 0.04.
 We then performed a grid search over the hyperparameters describing the SolTranNet architecture for 100 epochs over each fold of the CCV scaffold split of AqSolDB (Figure~\ref{tab:archsweep}).
@@ -223,6 +228,7 @@ We also note that our molecular embedding layer calculates the features for the 
 In order to select the final deployed model, we trained 5 models with different random seeds on all of AqSolDB utilizing the Huber loss function, the SGD optimizer with momentum of 0.06, no weight decay, and a learning rate of 0.04.
 We dynamically stopped training after performance on the training set stopped improving for 8 epochs.
 After which we selected the model architecture with the best average RMSE performance on our withheld test set and selected the best performing model from within that architecture class (Fig~\ref{fig:dynsweep}).
+The dropout in the final model and our early stopping criteria both help to prevent overtraining of the deployed SolTranNet.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Results
@@ -238,7 +244,7 @@ Lastly, we compare SolTranNet to a variety of other published ML-based solubilit
 
 To determine the final architecture of SolTranNet, we performed the two stage hyperparameter search as described in Methods.
 Table~\ref{tab:solsearchrmse} shows the RMSE performance of several models from the search on the 3 fold scaffold split of AqSolDB.
-We selected as the top RMSE performers of each class of models (by number of parameters) to show.
+We selected the top RMSE performers of each class of models (by number of parameters) to show.
 Note that only a single model was evaluated for each combination of hyperparameters.
 Contrary to expectation, we find that models with fewer parameters tended to perform better at solubility prediction for AqSolDB.
 This was driven by better performance on Fold1.
@@ -254,7 +260,7 @@ As we desire SolTranNet to be as fast as possible, we elected to deploy a single
 SolTranNet first creates the molecular graph representation for each input molecule's SMILES.
 Part of this representation is the calculation of the distance matrix, which stores the distance between each pair of atoms.
 In MAT's implementation this matrix is calculated from a 3D conformer of the molecule generated by RDkit, which can be a costly process.
-A much computationally cheaper process would be to utilize a 2D conformer of the molecule generated by RDkit, which is the behavior of the initial MAT code if a given 3D conformer could not be computed.
+A much computationally cheaper process would be to utilize a 2D conformer of the molecule generated by RDkit, which is the behavior of the original MAT code if a given 3D conformer could not be computed.
 We show that using a 2D or 3D conformer does not have a statistically significant difference on RMSE or $R^2$ for the first 10 hyper-parameter combinations of SolTranNet during the architecture sweep ($p=0.144$) (Figure~\ref{fig:2dv3d}).
 Thus, we used distances determined via RDKit's Compute2DCoords function with default parameters as the 2D conformer for the remainder of the sweep. 
 Since the final architecture does not use distance information ($\lambda_2 = 0$), distance matrix calculation is skipped, accelerating predictions.
@@ -299,13 +305,14 @@ Additionally, by implementing multiprocessing and running on a single GPU and 12
 
 \subsection{SolTranNet Performance on Other Datasets}
 
-In order to compare SolTranNet to other methods, we first verified SolTranNet's performance on ESOL\cite{esol} as in the MAT publication, and then evaluated SolTranNet on four recently published solubility training and testing sets\cite{lovric,boobier,cui,llinas} (Table~\ref{tab:othersetsrmse},\ref{tab:othersetsr2}).
+In order to compare SolTranNet to other methods, we first verified SolTranNet's performance on ESOL\cite{esol} as in the MAT publication\cite{MAT}, and then evaluated SolTranNet on four recently published solubility training and testing sets\cite{lovric,boobier,cui,llinas} (Table~\ref{tab:othersetsrmse},\ref{tab:othersetsr2}).
 To provide fair comparisons, we evaluate models trained with the provided training and testing data, and the deployed version of SolTranNet (trained on AqSolDB).
 For each comparison we initially trained five models with the same dynamic stopping criteria as our training.
-However, for the datasets provided by ESOL\cite{esol}, \citet{lovric}, and \citet{boobier}, this performed very poorly and stopped training early, due to their smaller size  (1128, 530 and 75 molecules respectively) as compared to our AqSolDB training sets (6655 CCV and 9982 full).
+However, for the datasets provided by ESOL\cite{esol}, \citet{lovric}, and \citet{boobier}, this performed poorly and stopped training early due to their smaller size  (1128, 530 and 75 molecules respectively) as compared to our AqSolDB training sets (6655 CCV and 9982 full).
 As such, we trained new models for 1000, 1000, and 500 epochs respectively for those sets.
 Reassuringly, our implementation of the original MAT architecture and SolTranNet exhibit no statistically significant difference in performance when training with the provided ESOL random splits (p=0.073 and p=0.26 respectively).
 Notably, the deployed version of SolTranNet has much worse performance on the ESOL splits ($RMSE=2.99$), but maintains a high correlation ($R^2=0.890$).
+See Supplemental Table~\ref{tab:esolaqsol} for further analysis.
 For the datasets provided by \citet{cui}, \citet{lovric}, and \citet{boobier}, SolTranNet's best performing model trained on the provided datasets achieves similar results to the method reported in the respective paper.
 However, for the SC2 data\cite{llinas}, SolTranNet has much worse performance than the top submitted method and ranks in the lower quarter of the submitted methods.
 
@@ -325,7 +332,7 @@ However, for the SC2 data\cite{llinas}, SolTranNet has much worse performance th
         Llinas2020 set2 & 1.060 & 1.811 (0.328) & 1.243 & 1.295 & 18/32 \\
         \hline
     \end{tabular}
-    \caption{RMSE performance of SolTranNet (STN) on other published datasets. The first two rows are testing the original MAT implementation on ESOL, and then testing SolTranNet's implementation. For both the orignal MAT and SolTranNet implementation, there is no difference between our training and the reported result (p=0.073 and p=0.26 respectively). For SolTranNet Training, we trained five different seeds of our final architecture on the provided training and testing splits and report the mean and standard deviation (in parentheses). The SolTranNet Deployed column is using our final deployed model to predict the provided test set. The final column is the overlap of the provided test set with our deployed model's training set. Notably the Lovric set had five different randomly selected splits for training and testing, which is why there is a mean in the Deployed and Overlap columns.}
+    \caption{RMSE performance of SolTranNet (STN) on other published datasets. The first two rows are testing the original MAT implementation on ESOL, and then testing SolTranNet's implementation. For both the original MAT and SolTranNet implementation, there is no difference between our training and the reported result (p=0.073 and p=0.26 respectively). For SolTranNet Training, we trained five different seeds of our final architecture on the provided training and testing splits and report the mean and standard deviation (in parentheses). The SolTranNet Deployed column is using our final deployed model to predict the provided test set. The final column is the overlap of the provided test set with our deployed model's training set, since there was no attempt to remove molecules present in the test set from the training set. Notably the Lovric set had five different randomly selected splits for training and testing, which is why there is a mean in the Deployed and Overlap columns.}
     \label{tab:othersetsrmse}
 \end{table}
 
@@ -386,6 +393,7 @@ We suspect this effect is due to the small training set.
 The available solubility data is quite small, with ``large datasets'' being thousands of data points.
 Small training set size makes it easier for ML methods to overfit their training data, and limits their generalization.
 We observed this phenomenon with our larger models during our hyperparameter sweep (Table~\ref{tab:solsearchrmse}).
+This is why we selected our final architecture by its performance on our withheld test set, and why models with dropout tended to perform better as both of these techniques help to reduce overfitting to the training set.
 We hypothesize that the smaller models are more suited to solubility prediction until more training data becomes available.
 Data augmentation is a potential approach to expand the available data, but we leave this to future work.
 
