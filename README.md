@@ -1,7 +1,7 @@
 # SolTranNet Paper
-The data sets and scripts used to generate the figures for SolTranNet (insert citation to paper)
+The data sets and scripts used to generate the figures for [SolTranNet](https://pubs.acs.org/doi/10.1021/acs.jcim.1c00331).
 
-SolTranNet's implementation can be found [here](https://https://github.com/gnina/SolTranNet).
+SolTranNet is a fork of the Molecule Attention Transformer, whose implementation can be found [here](https://https://github.com/gnina/SolTranNet).
 
 ## Requirements
  - PyTorch 1.7 -- compiled with CUDA
