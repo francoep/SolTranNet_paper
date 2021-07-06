@@ -328,7 +328,7 @@
         \centering
         \includegraphics[width=\linewidth]{figures/stn_deployed_pred_esol5.pdf}
     \end{subfigure}
-    \caption{Plots of the Deployed SolTranNet model predicting the test sets for each of the random ESOL splits. The predictions have high correlation ($R^2$=0.890), but are noticeably biased towards predicting a lower logS value.}
+    \caption{Plots of the Deployed SolTranNet model predicting the test sets for each of the random ESOL splits. The predictions have high correlation ($R^2$=0.890), and low RMSE (0.361). Notably, the ESOL data is present in the training set of SolTranNet.}
     \label{fig:stndepesol}
 \end{figure}
 
@@ -364,14 +364,14 @@
         \centering
         \includegraphics[width=\linewidth]{figures/stn_esol5_pred_aqsol.pdf}
     \end{subfigure}
-    \caption{Plots of SolTranNet trained on the random splits of ESOL predicting AqSol. The predictions have low correlation ($R^2=0.552$), and fail to predict a logS below -4, as such a sample was never seen during training.}
+    \caption{Plots of SolTranNet trained on the random splits of ESOL predicting AqSol. The predictions have low correlation ($R^2=0.552$), and high RMSE (1.67).}
     \label{fig:stnesolaqsol}
 \end{figure}
 
 \begin{figure}[tb]
     \centering
     \includegraphics{figures/esol_stn_hist.pdf}
-    \caption{Training distributions of AqSol (blue) and ESOL (orange). Bin width is half a log unit. Notably, AqSol covers a much wider range of possible solubility values, with the 28\% of the data in AqSol being below any value in ESOL.}
+    \caption{Training distributions of AqSol (blue) and ESOL (orange). Bin width is half a log unit. Notably, the distribution of solubilities in AqSol is markedly different than the distribution of solubilities in ESOL.}
     \label{fig:esol_hist}
 \end{figure}
 
@@ -381,15 +381,15 @@
     \hline
         Training Set & Testing Set & RMSE & $R^2$ \\
     \hline
-        ESOL & AqSol & 3.33 (0.037) & 0.552 (0.0062) \\
+        ESOL* & AqSol & 1.67 (0.021) & 0.552 (0.0062) \\
         AqSol & AqSol & 1.16 & 0.77 \\
     \hline
     \hline
-        AqSol & ESOL & 2.99 (0.11) & 0.89 (0.021) \\
+        AqSol & ESOL & 0.361 (0.017) & 0.89 (0.021) \\
         ESOL & ESOL & 0.289 (0.011) & 0.915 (0.011) \\
     \hline    
     \end{tabular}
-    \caption{SolTranNet comparison of performance utilizing ESOL or AqSol. Models tested on AqSol are tested on the entire AqSol dataset. Thus the AqSol-AqSol model is simply reporting its performance on its own training set (and is only a singular model). The models utilizing ESOL are either training or testing on the 6 provided random splits of ESOL from the original MAT publication. We report the mean performance, with the standard deviation in parenthesis. Note, no attempt was made to remove molecules present in the test set from the training set. You can see the predictions for the swapped sets in Fig~\ref{fig:stndepesol}-\ref{fig:stnesolaqsol} and the histogram of the solubilites in AqSol and ESOL in Fig~\ref{fig:esol_hist}. Notably, models trained with either set and tested on the other exhibit poor RMSE. However, models trained on ESOL fail to generalize their predictions to values outside of the range seen in training, which contributes to the low $R^2$ of their predictions on AqSol. This leads to a model trained on ESOL to be less useful as a screen, since it is likely to misclassify soluble molecules. The reverse situation does not occur, where a model trained on AqSol maintains a high Pearson's $R^2$ on ESOL, which makes it more suitable in a screening context.}
+    \caption{SolTranNet comparison of performance utilizing ESOL or AqSol on predicting logS. Models tested on AqSol are tested on the entire AqSol dataset. Thus the AqSol-AqSol model is simply reporting its performance on its own training set (and is only a singular model). The models utilizing ESOL are either training or testing on the 6 provided random splits of ESOL from the original MAT publication. Note that these values were mean centered and normalized in the original MAT dataset, but have been transformed back to logS units. We report the mean performance, with the standard deviation in parenthesis. Note, no attempt was made to remove molecules present in the test set from the training set. You can see the predictions for the swapped sets in Fig~\ref{fig:stndepesol}-\ref{fig:stnesolaqsol} and the histogram of the solubilites in AqSol and ESOL in Fig~\ref{fig:esol_hist}. Notably, models trained with either set and tested on the other exhibit worse RMSE. However, models trained on ESOL fail to generalize their predictions to the broader range of molecules present in AqSol, which contributes to the low $R^2$ of their predictions and worse RMSE. This leads to a model trained on ESOL to be less useful as a screen, since it is likely to misclassify soluble molecules. The reverse situation does not occur, where a model trained on AqSol maintains a high Pearson's $R^2$ on ESOL, which makes it more suitable in a screening context.}
     \label{tab:esolaqsol}
 \end{table}
 \end{document}
