@@ -3,6 +3,11 @@ The data sets and scripts used to generate the figures for [SolTranNet](https://
 
 SolTranNet is a fork of the Molecule Attention Transformer, whose implementation can be found [here](https://https://github.com/gnina/SolTranNet).
 
+# NOTICE
+It was brought to our attention by Rajendra Joshi that the ESOL dataset provided in the Molecule Attention Transformer repository is mean centered and normalized. We have updated the code in Making_Figures.ipynb to account for this. Additionally, we provide the unnormalized ESOL data in data/esol/delaney-processed.csv. Notably, since our implementation of SolTranNet is trained on unnormalized data, we had to adjust the models predictions to compare with the original MAT implementation.
+
+This changes the RMSE in Table 2 of the Deployed SolTranNet model (and in Table S6) from 2.99 (normalized) to 0.361 (unnormalized). It also changed the RMSE of the ESOL training, AqSol testing row of Table S6 from 3.33 (normalized) to 1.67 (unnormalized).
+
 ## Requirements
  - PyTorch 1.7 -- compiled with CUDA
  - pandas 0.25.3+
